@@ -10,11 +10,16 @@ import {
   ExternalLink,
   Trash2,
   Bookmark,
+  Play,
 } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { AudioPlayer } from '../components/audio/AudioPlayer'
+import {
+  YouTubeEmbedPlayer,
+  extractYouTubeVideoId,
+} from '../components/audio/YouTubeEmbedPlayer'
 import { ChapterTimeline } from '../components/audio/ChapterTimeline'
 import { AnnotationCard } from '../components/annotations/AnnotationCard'
 import { AnnotationForm } from '../components/annotations/AnnotationForm'
@@ -63,7 +68,7 @@ function getOfficialEmbedUrl(rawUrl) {
 export function AudioWorkspacePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const token = useEchoStore((s) => s.token)
   const user = useEchoStore((s) => s.user)
   const activeWorkspaceRole = useEchoStore((s) => s.activeWorkspaceRole)
@@ -127,16 +132,32 @@ export function AudioWorkspacePage() {
   const [highlightStart, setHighlightStart] = useState(null)
   const [clipInitialRange, setClipInitialRange] = useState({ start: null, end: null })
   const [clipToast, setClipToast] = useState(null)
+  const [autoplayBlockedTime, setAutoplayBlockedTime] = useState(null)
 
-  // Deep-link timestamp & annotation selection from Notifications (?t=...&ann=...)
+  // Deep-link timestamp & annotation selection from Notifications / Discussions / Extension (?t=...&ann=...&autoplay=1)
   useEffect(() => {
     const tParam = searchParams.get('t')
     const annParam = searchParams.get('ann')
+    const autoplayParam = searchParams.get('autoplay')
     if (annParam) setSelectedAnnotationId(annParam)
     if (tParam !== null && !Number.isNaN(Number(tParam))) {
-      setSeekTarget({ time: Math.max(0, Number(tParam)), autoplay: false, ts: Date.now() })
+      setSeekTarget({
+        time: Math.max(0, Number(tParam)),
+        autoplay: autoplayParam === '1',
+        ts: Date.now(),
+      })
     }
   }, [id, searchParams])
+
+  // Smoothly scroll the selected annotation card into view when available
+  useEffect(() => {
+    if (!selectedAnnotationId) return
+    const timer = setTimeout(() => {
+      const targetEl = document.getElementById(`annotation-${selectedAnnotationId}`)
+      targetEl?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 80)
+    return () => clearTimeout(timer)
+  }, [selectedAnnotationId, annotations.length])
 
   const [showChapterForm, setShowChapterForm] = useState(false)
   const [chapterTitle, setChapterTitle] = useState('')
@@ -288,10 +309,16 @@ export function AudioWorkspacePage() {
         ? { ...recording, audioUrl: recording.sourceUrl }
         : null
 
-  const seekTo = (time, autoplay = false) => {
+  const seekTo = (time, autoplay = false, annId = null) => {
     const safe = Math.max(0, time)
+    setAutoplayBlockedTime(null)
     setSeekTarget({ time: safe, autoplay, ts: Date.now() })
     setCurrentTime(safe)
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('t', String(Math.floor(safe)))
+    if (annId) nextParams.set('ann', annId)
+    nextParams.delete('autoplay')
+    setSearchParams(nextParams, { replace: true })
   }
 
   const handlePlayClipInterval = (startTime, endTime) => {
@@ -462,62 +489,84 @@ export function AudioWorkspacePage() {
 
           {/* Authoritative AudioPlayer for UPLOAD or direct audio EXTERNAL_LINK */}
           {playableRecording ? (
-            <AudioPlayer
-              recording={playableRecording}
-              mode={mode}
-              annotations={recordingAnnotations}
-              clips={recordingClips}
-              activeAnnotationId={selectedAnnotationId}
-              clipRange={activeClipRange}
-              seekToTime={seekTarget}
-              defaultSpeed={workspaceSettings.defaultPlaybackSpeed || 1}
-              onTimeUpdate={setCurrentTime}
-              onDurationChange={setDuration}
-              onSelectAnnotation={(ann) => {
-                setSelectedAnnotationId(ann.id)
-                setCurrentTime(ann.timestamp)
-              }}
-              onSelectClip={(clip) =>
-                setActiveClipRange({
-                  startTime: clip.startTime,
-                  endTime: clip.endTime,
-                })
-              }
-              onClearClipRange={() => setActiveClipRange(null)}
-              onCreateAnnotation={
-                canWrite
-                  ? (t) => {
-                      setCurrentTime(t)
-                      setShowAnnotationForm(true)
-                    }
-                  : undefined
-              }
-              onCreateClip={
-                canWrite
-                  ? (t) => {
-                      setCurrentTime(t)
-                      setClipInitialRange({ start: null, end: null })
-                      setClipModalOpen(true)
-                    }
-                  : undefined
-              }
-              highlightStart={highlightStart}
-              onStartHighlight={
-                canWrite ? (t) => setHighlightStart(Math.floor(t)) : undefined
-              }
-              onStopHighlight={
-                canWrite
-                  ? (t) => {
-                      const start = highlightStart ?? Math.floor(t)
-                      const end = Math.max(start + 1, Math.floor(t))
-                      setHighlightStart(null)
-                      setClipInitialRange({ start, end })
-                      setClipModalOpen(true)
-                    }
-                  : undefined
-              }
-              onCancelHighlight={() => setHighlightStart(null)}
-            />
+            <div className="space-y-2">
+              <AudioPlayer
+                recording={playableRecording}
+                mode={mode}
+                annotations={recordingAnnotations}
+                clips={recordingClips}
+                activeAnnotationId={selectedAnnotationId}
+                clipRange={activeClipRange}
+                seekToTime={seekTarget}
+                defaultSpeed={workspaceSettings.defaultPlaybackSpeed || 1}
+                onTimeUpdate={setCurrentTime}
+                onDurationChange={setDuration}
+                onSelectAnnotation={(ann) => {
+                  setSelectedAnnotationId(ann.id)
+                  setCurrentTime(ann.timestamp)
+                }}
+                onSelectClip={(clip) =>
+                  setActiveClipRange({
+                    startTime: clip.startTime,
+                    endTime: clip.endTime,
+                  })
+                }
+                onClearClipRange={() => setActiveClipRange(null)}
+                onAutoplayBlocked={(t) => setAutoplayBlockedTime(t)}
+                onCreateAnnotation={
+                  canWrite
+                    ? (t) => {
+                        setCurrentTime(t)
+                        setShowAnnotationForm(true)
+                      }
+                    : undefined
+                }
+                onCreateClip={
+                  canWrite
+                    ? (t) => {
+                        setCurrentTime(t)
+                        setClipInitialRange({ start: null, end: null })
+                        setClipModalOpen(true)
+                      }
+                    : undefined
+                }
+                highlightStart={highlightStart}
+                onStartHighlight={
+                  canWrite ? (t) => setHighlightStart(Math.floor(t)) : undefined
+                }
+                onStopHighlight={
+                  canWrite
+                    ? (t) => {
+                        const start = highlightStart ?? Math.floor(t)
+                        const end = Math.max(start + 1, Math.floor(t))
+                        setHighlightStart(null)
+                        setClipInitialRange({ start, end })
+                        setClipModalOpen(true)
+                      }
+                    : undefined
+                }
+                onCancelHighlight={() => setHighlightStart(null)}
+              />
+              {autoplayBlockedTime !== null && (
+                <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-[var(--bg-secondary)] border border-[var(--border)] text-xs">
+                  <span className="text-[var(--text-secondary)]">
+                    Browser autoplay was blocked at{' '}
+                    <span className="font-mono text-[var(--text-primary)]">
+                      {formatTime(autoplayBlockedTime)}
+                    </span>
+                    .
+                  </span>
+                  <Button
+                    size="sm"
+                    variant={mode === 'study' ? 'cyan' : 'primary'}
+                    onClick={() => seekTo(autoplayBlockedTime, true, selectedAnnotationId)}
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    Click to play from {formatTime(autoplayBlockedTime)}
+                  </Button>
+                </div>
+              )}
+            </div>
           ) : (
             <Card className="p-5 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -547,15 +596,48 @@ export function AudioWorkspacePage() {
                 )}
               </div>
 
-              {getOfficialEmbedUrl(recording.sourceUrl) && (
-                <div className="aspect-video w-full overflow-hidden rounded-lg border border-[var(--border)] bg-black">
-                  <iframe
-                    src={getOfficialEmbedUrl(recording.sourceUrl)}
-                    title={recording.title}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+              {extractYouTubeVideoId(recording.sourceUrl) ? (
+                <YouTubeEmbedPlayer
+                  videoId={extractYouTubeVideoId(recording.sourceUrl)}
+                  sourceUrl={recording.sourceUrl}
+                  title={recording.title}
+                  seekToTime={seekTarget}
+                  onTimeUpdate={setCurrentTime}
+                  onDurationChange={setDuration}
+                  onAutoplayBlocked={(t) => setAutoplayBlockedTime(t)}
+                  onPlayStarted={() => setAutoplayBlockedTime(null)}
+                />
+              ) : (
+                getOfficialEmbedUrl(recording.sourceUrl) && (
+                  <div className="aspect-video w-full overflow-hidden rounded-lg border border-[var(--border)] bg-black">
+                    <iframe
+                      src={getOfficialEmbedUrl(recording.sourceUrl)}
+                      title={recording.title}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )
+              )}
+
+              {autoplayBlockedTime !== null && (
+                <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md bg-[var(--bg-secondary)] border border-[var(--border)] text-xs">
+                  <span className="text-[var(--text-secondary)]">
+                    Browser autoplay was blocked at{' '}
+                    <span className="font-mono text-[var(--text-primary)]">
+                      {formatTime(autoplayBlockedTime)}
+                    </span>
+                    .
+                  </span>
+                  <Button
+                    size="sm"
+                    variant={mode === 'study' ? 'cyan' : 'primary'}
+                    onClick={() => seekTo(autoplayBlockedTime, true, selectedAnnotationId)}
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    Click to play from {formatTime(autoplayBlockedTime)}
+                  </Button>
                 </div>
               )}
 
@@ -851,7 +933,7 @@ export function AudioWorkspacePage() {
                       isManager={isManager}
                       onSeek={(target) => {
                         setSelectedAnnotationId(target.id)
-                        seekTo(target.timestamp)
+                        seekTo(target.timestamp, true, target.id)
                       }}
                       onStatusChange={
                         canWrite

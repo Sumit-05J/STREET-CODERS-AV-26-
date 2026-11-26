@@ -80,7 +80,11 @@ export function DiscussionsPage() {
               <div className="flex items-center justify-between px-1">
                 <button
                   type="button"
-                  onClick={() => navigate(`/app/recordings/${ann.recordingId}`)}
+                  onClick={() =>
+                    navigate(
+                      `/app/recordings/${ann.recordingId}?t=${Math.floor(ann.timestamp)}&ann=${ann.id}&autoplay=1`
+                    )
+                  }
                   className="inline-flex items-center gap-1 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   <span>{rec?.title || 'Recording'}</span>
@@ -90,7 +94,11 @@ export function DiscussionsPage() {
               <AnnotationCard
                 annotation={ann}
                 mode={mode}
-                onSeek={() => navigate(`/app/recordings/${ann.recordingId}`)}
+                onSeek={() =>
+                  navigate(
+                    `/app/recordings/${ann.recordingId}?t=${Math.floor(ann.timestamp)}&ann=${ann.id}&autoplay=1`
+                  )
+                }
                 onStatusChange={updateAnnotationStatus}
                 onAddReply={addReply}
                 defaultExpanded

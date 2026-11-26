@@ -36,7 +36,11 @@ export function HighlightsPage() {
             <ClipCard
               key={clip.id}
               clip={clip}
-              onPlayClip={(c) => navigate(`/app/recordings/${c.recordingId}`)}
+              onPlayClip={(c) =>
+                navigate(
+                  `/app/recordings/${c.recordingId}?t=${Math.floor(c.startTime)}&autoplay=1`
+                )
+              }
             />
           ))}
         </div>

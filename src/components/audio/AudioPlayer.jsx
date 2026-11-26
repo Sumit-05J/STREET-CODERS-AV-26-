@@ -30,6 +30,7 @@ export function AudioPlayer({
   onSelectAnnotation,
   onSelectClip,
   onClearClipRange,
+  onAutoplayBlocked,
   onCreateAnnotation,
   onCreateClip,
   highlightStart = null,
@@ -74,7 +75,9 @@ export function AudioPlayer({
     ws.setTime(target)
     setCurrentTime(target)
     if (seekToTime.autoplay) {
-      ws.play()
+      Promise.resolve(ws.play()).catch(() => {
+        onAutoplayBlocked?.(target)
+      })
     }
   }, [seekToTime, duration, isReady])
 
@@ -156,7 +159,11 @@ export function AudioPlayer({
             const clamped = Math.max(0, Math.min(time, dur || time))
             ws.setTime(clamped)
             setCurrentTime(clamped)
-            if (autoplay) ws.play()
+            if (autoplay) {
+              Promise.resolve(ws.play()).catch(() => {
+                onAutoplayBlocked?.(clamped)
+              })
+            }
           }
         }}
         onTimeUpdate={handleTimeUpdate}

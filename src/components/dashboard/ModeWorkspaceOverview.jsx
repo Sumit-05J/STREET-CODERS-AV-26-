@@ -314,7 +314,11 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                   <Card
                     key={ann.id}
                     interactive
-                    onClick={() => navigate(`/app/recordings/${ann.recordingId}`)}
+                    onClick={() =>
+                      navigate(
+                        `/app/recordings/${ann.recordingId}?t=${Math.floor(ann.timestamp)}&ann=${ann.id}&autoplay=1`
+                      )
+                    }
                     className="p-3.5 cursor-pointer space-y-2"
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -366,7 +370,11 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                 <ClipCard
                   key={clip.id}
                   clip={clip}
-                  onPlayClip={(c) => navigate(`/app/recordings/${c.recordingId}`)}
+                  onPlayClip={(c) =>
+                    navigate(
+                      `/app/recordings/${c.recordingId}?t=${Math.floor(c.startTime)}&autoplay=1`
+                    )
+                  }
                 />
               ))}
             </div>

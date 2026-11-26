@@ -35,14 +35,15 @@ export function AnnotationCard({
 
   return (
     <div
+      id={`annotation-${annotation.id}`}
       onClick={handleCardClick}
       className={`rounded-lg border p-3.5 transition-all ${
-        onSeek ? 'cursor-pointer' : ''
+        onSeek ? 'cursor-pointer hover:shadow-[0_2px_10px_rgba(24,24,22,0.06)]' : ''
       } ${
         isActive
           ? mode === 'study'
-            ? 'bg-[var(--accent-study)]/6 border-[var(--accent-study)] shadow-[0_2px_10px_rgba(63,106,88,0.08)]'
-            : 'bg-[var(--accent-creator)]/6 border-[var(--accent-creator)] shadow-[0_2px_10px_rgba(217,83,47,0.08)]'
+            ? 'bg-[var(--accent-study)]/8 border-[var(--accent-study)] ring-1 ring-[var(--accent-study)]/30 shadow-[0_2px_10px_rgba(63,106,88,0.08)]'
+            : 'bg-[var(--accent-creator)]/8 border-[var(--accent-creator)] ring-1 ring-[var(--accent-creator)]/30 shadow-[0_2px_10px_rgba(217,83,47,0.08)]'
           : 'bg-[var(--surface)] border-[var(--border)] hover:border-[var(--border-strong)]'
       }`}
     >
