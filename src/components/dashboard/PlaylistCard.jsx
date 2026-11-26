@@ -12,7 +12,7 @@ export function PlaylistCard({ playlist }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-[#18181D] border border-[#27272F] flex items-center justify-center text-[#A1A1AA]">
+            <div className="w-7 h-7 rounded-md bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--text-secondary)]">
               <ListMusic className="w-3.5 h-3.5" />
             </div>
             <Badge tone={isCreator ? 'primary' : 'cyan'}>
@@ -22,7 +22,7 @@ export function PlaylistCard({ playlist }) {
           </div>
           {playlist.rssUrl && (
             <span
-              className="inline-flex items-center gap-1 text-[11px] text-emerald-400"
+              className="inline-flex items-center gap-1 text-[11px] text-[var(--success)]"
               title={playlist.rssUrl}
             >
               <Rss className="w-3 h-3" />
@@ -33,20 +33,20 @@ export function PlaylistCard({ playlist }) {
 
         <Link
           to="/app/playlists"
-          className="block text-sm font-semibold text-[#F4F4F5] hover:text-[#22D3EE] transition-colors"
+          className="block text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent-study)] transition-colors"
         >
           {playlist.title}
         </Link>
-        <p className="text-xs text-[#A1A1AA] line-clamp-2">
+        <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
           {playlist.description}
         </p>
       </div>
 
-      <div className="pt-2 border-t border-[#27272F] flex items-center justify-between text-xs text-[#71717A]">
+      <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--text-muted)]">
         <span>Updated {playlist.updatedAt}</span>
         <Link
           to="/app/playlists"
-          className="inline-flex items-center gap-1 text-[#A1A1AA] hover:text-[#F4F4F5]"
+          className="inline-flex items-center gap-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
         >
           Open <ArrowUpRight className="w-3 h-3" />
         </Link>

@@ -30,10 +30,10 @@ export function DiscussionsPage() {
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
       <div>
         <Badge tone={mode === 'study' ? 'cyan' : 'primary'}>{cfg.name}</Badge>
-        <h1 className="text-2xl font-semibold text-[#F4F4F5] mt-2">
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)] mt-2">
           Discussions &amp; Annotations
         </h1>
-        <p className="text-sm text-[#A1A1AA] mt-0.5">
+        <p className="text-sm text-[var(--text-secondary)] mt-0.5">
           All timestamped threads across your {cfg.recordingPlural.toLowerCase()}.
         </p>
       </div>
@@ -48,8 +48,8 @@ export function DiscussionsPage() {
               onClick={() => setCategoryFilter(f)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
                 categoryFilter === f
-                  ? 'bg-[#18181D] border-[#3F3F46] text-[#F4F4F5]'
-                  : 'bg-[#111114] border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--bg-secondary)] border-[var(--border-strong)] text-[var(--text-primary)]'
+                  : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               {f === 'ALL' ? 'All Categories' : f.charAt(0) + f.slice(1).toLowerCase()}
@@ -60,7 +60,7 @@ export function DiscussionsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-8 px-2.5 rounded-lg bg-[#111114] border border-[#27272F] text-xs text-[#F4F4F5] focus:outline-none"
+          className="h-8 px-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none"
         >
           <option value="ALL">All Statuses</option>
           {Object.entries(cfg.statusLabels).map(([key, meta]) => (
@@ -81,7 +81,7 @@ export function DiscussionsPage() {
                 <button
                   type="button"
                   onClick={() => navigate(`/app/recordings/${ann.recordingId}`)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[#A1A1AA] hover:text-[#F4F4F5] cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   <span>{rec?.title || 'Recording'}</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -100,7 +100,7 @@ export function DiscussionsPage() {
         })}
 
         {modeAnnotations.length === 0 && (
-          <Card className="p-8 text-center text-sm text-[#A1A1AA]">
+          <Card className="p-8 text-center text-sm text-[var(--text-secondary)]">
             {cfg.emptyStateText}
           </Card>
         )}

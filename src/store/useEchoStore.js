@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { apiClient, setAuthToken } from '../services/api'
+import { apiClient, setAuthToken, setOnUnauthorized } from '../services/api'
 import { connectSocket, disconnectSocket } from '../services/socket'
 
 function formatRelativeTime(dateInput) {
@@ -287,7 +287,7 @@ export const useEchoStore = create(
           role: m.role,
           modes: [modeLower],
           status: 'Active',
-          avatarColor: m.user.avatarColor || '#8B5CF6',
+          avatarColor: m.user.avatarColor || '#D9532F',
         }))
 
         const activity = buildWorkspaceActivity(
@@ -347,6 +347,8 @@ export const useEchoStore = create(
         )
 
         set((state) => ({
+          activeWorkspaceId: episode.workspaceId || state.activeWorkspaceId,
+          mode: modeLower || state.mode,
           activeWorkspaceRole: myRole || state.activeWorkspaceRole,
           recordings: state.recordings.some((r) => r.id === normEp.id)
             ? state.recordings.map((r) => (r.id === normEp.id ? normEp : r))
@@ -687,7 +689,7 @@ export const useEchoStore = create(
           role: member.role,
           modes: [mode],
           status: 'Active',
-          avatarColor: member.user.avatarColor || '#22D3EE',
+          avatarColor: member.user.avatarColor || '#3F6A58',
         }
         set((state) => ({
           members: state.members.some((m) => m.id === norm.id)
@@ -738,7 +740,7 @@ export const useEchoStore = create(
           role: member.role,
           modes: [mode],
           status: 'Active',
-          avatarColor: member.user.avatarColor || '#22D3EE',
+          avatarColor: member.user.avatarColor || '#3F6A58',
         }
         set((state) => ({
           members: state.members.some((m) => m.id === norm.id)
@@ -843,10 +845,34 @@ export const useEchoStore = create(
           clips: state.clips.filter((c) => c.id !== clipId),
         }))
       },
+
+      completeHandoff: async (code) => {
+        const existingToken = get().token
+        if (existingToken) {
+          try {
+            setAuthToken(existingToken)
+            const { user } = await apiClient.getMe()
+            set({ user, isAuthenticated: true })
+            connectSocket(existingToken)
+            return { reused: true }
+          } catch {
+            // Existing web token is invalid/expired; fall through to exchange handoff code
+          }
+        }
+        const { user, token } = await apiClient.exchangeHandoff(code)
+        setAuthToken(token)
+        connectSocket(token)
+        set({ user, token, isAuthenticated: true })
+        await get().loadWorkspaces().catch(() => {})
+        return { reused: false }
+      },
     }),
     {
       name: 'echospace-store-v2',
       onRehydrateStorage: () => (state) => {
+        setOnUnauthorized(() => {
+          useEchoStore.getState().logout()
+        })
         if (state?.token) {
           setAuthToken(state.token)
           connectSocket(state.token)

@@ -20,10 +20,10 @@ export function HighlightsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Badge tone={mode === 'study' ? 'cyan' : 'primary'}>{cfg.name}</Badge>
-          <h1 className="text-2xl font-semibold text-[#F4F4F5] mt-2">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mt-2">
             {mode === 'study' ? 'Revision Highlights' : 'Approved Highlights'}
           </h1>
-          <p className="text-sm text-[#A1A1AA] mt-0.5">
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
             Shareable audio moments extracted from your{' '}
             {cfg.recordingPlural.toLowerCase()}.
           </p>
@@ -42,8 +42,8 @@ export function HighlightsPage() {
         </div>
       ) : (
         <Card className="p-8 text-center space-y-2">
-          <Scissors className="w-6 h-6 text-[#71717A] mx-auto" />
-          <p className="text-sm text-[#A1A1AA]">
+          <Scissors className="w-6 h-6 text-[var(--text-muted)] mx-auto" />
+          <p className="text-sm text-[var(--text-secondary)]">
             No highlight clips created in {cfg.name} yet.
           </p>
         </Card>

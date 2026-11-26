@@ -59,10 +59,10 @@ export function JoinWorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col">
-      <header className="h-16 px-4 sm:px-8 border-b border-[#27272F] flex items-center justify-between">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col">
+      <header className="h-16 px-4 sm:px-8 border-b border-[var(--border)] flex items-center justify-between">
         <Logo to="/" />
-        <Link to="/app" className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5]">
+        <Link to="/app" className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
           Go to Dashboard
         </Link>
       </header>
@@ -70,17 +70,17 @@ export function JoinWorkspacePage() {
       <main className="flex-1 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-6 space-y-5">
           {loading ? (
-            <p className="text-sm text-[#A1A1AA] text-center py-6">
+            <p className="text-sm text-[var(--text-secondary)] text-center py-6">
               Verifying workspace invitation...
             </p>
           ) : error && !invitation ? (
             <div className="text-center space-y-4 py-2">
-              <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
+              <AlertCircle className="w-10 h-10 text-[var(--danger)] mx-auto" />
               <div className="space-y-1">
-                <h1 className="text-lg font-semibold text-[#F4F4F5]">
+                <h1 className="text-lg font-semibold text-[var(--text-primary)]">
                   Invitation Unavailable
                 </h1>
-                <p className="text-xs text-[#A1A1AA] leading-relaxed">{error}</p>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{error}</p>
               </div>
               <Link to="/workspaces" className="inline-block">
                 <Button size="sm" variant="secondary">
@@ -107,22 +107,22 @@ export function JoinWorkspacePage() {
               </div>
 
               <div className="space-y-1.5">
-                <p className="text-xs text-[#A1A1AA]">
+                <p className="text-xs text-[var(--text-secondary)]">
                   {invitation.invitedByName} invited you to join
                 </p>
-                <h1 className="text-2xl font-semibold text-[#F4F4F5]">
+                <h1 className="text-2xl font-semibold text-[var(--text-primary)]">
                   {invitation.workspace.name}
                 </h1>
                 {invitation.workspace.description && (
-                  <p className="text-xs text-[#A1A1AA] leading-relaxed">
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                     {invitation.workspace.description}
                   </p>
                 )}
               </div>
 
-              <div className="p-3 rounded-lg bg-[#09090B] border border-[#27272F] flex items-center justify-between text-xs text-[#A1A1AA]">
+              <div className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] flex items-center justify-between text-xs text-[var(--text-secondary)]">
                 <span className="inline-flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-[#22D3EE]" />
+                  <Users className="w-3.5 h-3.5 text-[var(--accent-study)]" />
                   {invitation.workspace._count?.members ?? 1} members
                 </span>
                 <span>
@@ -131,7 +131,7 @@ export function JoinWorkspacePage() {
               </div>
 
               {error && (
-                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+                <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-[var(--danger)]">
                   {error}
                 </div>
               )}
@@ -162,7 +162,7 @@ export function JoinWorkspacePage() {
                   </Button>
                   <Link
                     to={`/register?redirect=${encodeURIComponent(`/join/${token}`)}`}
-                    className="block text-center text-xs text-[#A1A1AA] hover:text-[#F4F4F5]"
+                    className="block text-center text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   >
                     New to EchoSpace? Create an account
                   </Link>

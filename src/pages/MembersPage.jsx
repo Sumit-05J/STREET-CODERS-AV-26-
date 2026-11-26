@@ -96,10 +96,10 @@ export function MembersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Badge tone={mode === 'study' ? 'cyan' : 'primary'}>{cfg.name}</Badge>
-          <h1 className="text-2xl font-semibold text-[#F4F4F5] mt-2">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mt-2">
             Members &amp; Invitations
           </h1>
-          <p className="text-sm text-[#A1A1AA] mt-0.5">
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
             Collaborators with access to recordings, annotations, and clips.
           </p>
         </div>
@@ -116,7 +116,7 @@ export function MembersPage() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-[var(--danger)]">
           {error}
         </div>
       )}
@@ -126,10 +126,10 @@ export function MembersPage() {
         <Card className="p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold text-[#F4F4F5]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 Invite Members via Link or Code
               </h2>
-              <p className="text-xs text-[#A1A1AA] mt-0.5">
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                 Share an invitation link or code so teammates can join this
                 workspace directly.
               </p>
@@ -138,13 +138,13 @@ export function MembersPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-[#A1A1AA]">
+              <label className="block text-xs font-medium text-[var(--text-secondary)]">
                 Invited Role
               </label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
-                className="w-full h-9 px-3 rounded-lg bg-[#09090B] border border-[#27272F] text-sm text-[#F4F4F5]"
+                className="w-full h-9 px-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-sm text-[var(--text-primary)]"
               >
                 <option value="MEMBER">MEMBER</option>
                 <option value="EDITOR">EDITOR</option>
@@ -154,13 +154,13 @@ export function MembersPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-[#A1A1AA]">
+              <label className="block text-xs font-medium text-[var(--text-secondary)]">
                 Expiration
               </label>
               <select
                 value={expiresHours}
                 onChange={(e) => setExpiresHours(e.target.value)}
-                className="w-full h-9 px-3 rounded-lg bg-[#09090B] border border-[#27272F] text-sm text-[#F4F4F5]"
+                className="w-full h-9 px-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-sm text-[var(--text-primary)]"
               >
                 <option value="24">24 hours</option>
                 <option value="168">7 days</option>
@@ -179,9 +179,9 @@ export function MembersPage() {
           </div>
 
           {generatedInvite && (
-            <div className="p-3.5 rounded-lg bg-[#09090B] border border-[#22D3EE]/30 space-y-2.5">
+            <div className="p-3.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--accent-study)]/30 space-y-2.5">
               <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="text-[#22D3EE] font-medium">
+                <span className="text-[var(--accent-study)] font-medium">
                   Invitation Ready ({generatedInvite.role})
                 </span>
               </div>
@@ -190,7 +190,7 @@ export function MembersPage() {
                 <input
                   readOnly
                   value={generatedInvite.url}
-                  className="flex-1 h-8 px-2.5 rounded bg-[#111114] border border-[#27272F] font-mono text-xs text-[#F4F4F5]"
+                  className="flex-1 h-8 px-2.5 rounded bg-[var(--surface)] border border-[var(--border)] font-mono text-xs text-[var(--text-primary)]"
                 />
                 <Button
                   size="sm"
@@ -198,7 +198,7 @@ export function MembersPage() {
                   onClick={() => copyText(generatedInvite.url, 'link')}
                 >
                   {copiedField === 'link' ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <Check className="w-3.5 h-3.5 text-[var(--success)]" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -207,10 +207,10 @@ export function MembersPage() {
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-1">
-                <span className="inline-flex items-center gap-1.5 text-xs text-[#A1A1AA]">
-                  <KeyRound className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                <span className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                  <KeyRound className="w-3.5 h-3.5 text-[var(--accent-creator)]" />
                   Invite Code:{' '}
-                  <strong className="font-mono text-[#F4F4F5]">
+                  <strong className="font-mono text-[var(--text-primary)]">
                     {generatedInvite.code}
                   </strong>
                 </span>
@@ -220,7 +220,7 @@ export function MembersPage() {
                   onClick={() => copyText(generatedInvite.code, 'code')}
                 >
                   {copiedField === 'code' ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <Check className="w-3.5 h-3.5 text-[var(--success)]" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
@@ -232,22 +232,22 @@ export function MembersPage() {
 
           {/* Active Invitations */}
           {invitations.length > 0 && (
-            <div className="pt-2 border-t border-[#27272F] space-y-2">
-              <p className="text-xs font-medium text-[#A1A1AA]">
+            <div className="pt-2 border-t border-[var(--border)] space-y-2">
+              <p className="text-xs font-medium text-[var(--text-secondary)]">
                 Active Invitations ({invitations.length})
               </p>
-              <div className="divide-y divide-[#27272F] rounded-lg border border-[#27272F] bg-[#09090B]">
+              <div className="divide-y divide-[var(--border)] rounded-lg border border-[var(--border)] bg-[var(--bg-primary)]">
                 {invitations.map((inv) => (
                   <div
                     key={inv.id}
                     className="px-3 py-2 flex items-center justify-between gap-3 text-xs"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="font-mono font-semibold text-[#F4F4F5]">
+                      <span className="font-mono font-semibold text-[var(--text-primary)]">
                         {inv.code}
                       </span>
                       <Badge tone="neutral">{inv.role}</Badge>
-                      <span className="text-[#71717A] hidden sm:inline">
+                      <span className="text-[var(--text-muted)] hidden sm:inline">
                         Used {inv.usedCount}x
                         {inv.expiresAt
                           ? ` · Expires ${new Date(inv.expiresAt).toLocaleDateString()}`
@@ -258,14 +258,14 @@ export function MembersPage() {
                       <button
                         type="button"
                         onClick={() => copyText(inv.code, inv.id)}
-                        className="px-2 py-1 rounded bg-[#111114] border border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5] cursor-pointer"
+                        className="px-2 py-1 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                       >
                         {copiedField === inv.id ? 'Copied' : 'Copy Code'}
                       </button>
                       <button
                         type="button"
                         onClick={() => revokeInvitation(inv.id).catch((e) => setError(e.message))}
-                        className="px-2 py-1 rounded bg-[#111114] border border-[#27272F] text-rose-400 hover:border-rose-500/40 cursor-pointer"
+                        className="px-2 py-1 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--danger)] hover:border-rose-500/40 cursor-pointer"
                       >
                         Revoke
                       </button>
@@ -279,7 +279,7 @@ export function MembersPage() {
       )}
 
       {/* Existing Members List */}
-      <Card className="divide-y divide-[#27272F]">
+      <Card className="divide-y divide-[var(--border)]">
         {members.map((m) => {
           const canRemove =
             canManage &&
@@ -295,15 +295,15 @@ export function MembersPage() {
               <div className="flex items-center gap-3">
                 <Avatar name={m.name} color={m.avatarColor} size="md" />
                 <div>
-                  <p className="text-sm font-medium text-[#F4F4F5]">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">
                     {m.name}
                     {user?.id === m.id && (
-                      <span className="ml-1.5 text-[11px] text-[#71717A]">
+                      <span className="ml-1.5 text-[11px] text-[var(--text-muted)]">
                         (You)
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-[#A1A1AA]">{m.email}</p>
+                  <p className="text-xs text-[var(--text-secondary)]">{m.email}</p>
                 </div>
               </div>
 
@@ -322,7 +322,7 @@ export function MembersPage() {
                         )
                       }
                     }}
-                    className="p-1.5 rounded text-[#71717A] hover:text-rose-400 hover:bg-[#18181D] cursor-pointer"
+                    className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--bg-secondary)] cursor-pointer"
                     title="Remove member"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -333,7 +333,7 @@ export function MembersPage() {
           )
         })}
         {members.length === 0 && (
-          <div className="p-6 text-center text-xs text-[#A1A1AA]">
+          <div className="p-6 text-center text-xs text-[var(--text-secondary)]">
             No members found in this workspace yet.
           </div>
         )}
@@ -357,13 +357,13 @@ export function MembersPage() {
             }}
           />
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-[#A1A1AA]">
+            <label className="block text-xs font-medium text-[var(--text-secondary)]">
               Workspace Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full h-9 px-3 rounded-lg bg-[#09090B] border border-[#27272F] text-sm text-[#F4F4F5]"
+              className="w-full h-9 px-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-sm text-[var(--text-primary)]"
             >
               <option value="MEMBER">MEMBER (Annotate, reply &amp; upload)</option>
               <option value="EDITOR">EDITOR (Upload &amp; manage content)</option>
@@ -371,7 +371,7 @@ export function MembersPage() {
               {isOwner && <option value="ADMIN">ADMIN (Manage members &amp; invites)</option>}
             </select>
           </div>
-          {error && <p className="text-xs text-rose-400">{error}</p>}
+          {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setInviteOpen(false)}>
               Cancel

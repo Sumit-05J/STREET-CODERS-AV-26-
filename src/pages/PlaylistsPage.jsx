@@ -89,10 +89,10 @@ export function PlaylistsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <Badge tone={mode === 'study' ? 'cyan' : 'primary'}>{cfg.name}</Badge>
-          <h1 className="text-2xl font-semibold text-[#F4F4F5] mt-2">
+          <h1 className="text-2xl font-semibold text-[var(--text-primary)] mt-2">
             {cfg.collectionPlural}
           </h1>
-          <p className="text-sm text-[#A1A1AA] mt-0.5">
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
             {mode === 'study'
               ? 'Organize lectures into structured subject playlists for revision.'
               : 'Manage podcast shows, episode ordering, and RSS syndication feeds.'}
@@ -122,15 +122,15 @@ export function PlaylistsPage() {
       {/* Selected Playlist Detail + Episode Ordering */}
       {activePlaylist && (
         <Card className="p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-[#27272F]">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-[var(--border)]">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <ListMusic className="w-4 h-4 text-[#A1A1AA]" />
-                <h2 className="text-lg font-semibold text-[#F4F4F5]">
+                <ListMusic className="w-4 h-4 text-[var(--text-secondary)]" />
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                   {activePlaylist.title}
                 </h2>
               </div>
-              <p className="text-xs text-[#A1A1AA]">
+              <p className="text-xs text-[var(--text-secondary)]">
                 {activePlaylist.description}
               </p>
             </div>
@@ -170,11 +170,11 @@ export function PlaylistsPage() {
 
           {/* RSS Feed bar in Creator Mode */}
           {mode === 'creator' && (
-            <div className="p-3 rounded-lg bg-[#09090B] border border-[#27272F] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs min-w-0">
-                <Rss className="w-4 h-4 text-[#A78BFA] shrink-0" />
-                <span className="text-[#A1A1AA] shrink-0">RSS Feed:</span>
-                <span className="font-mono text-[#F4F4F5] truncate">
+                <Rss className="w-4 h-4 text-[var(--accent-creator)] shrink-0" />
+                <span className="text-[var(--text-secondary)] shrink-0">RSS Feed:</span>
+                <span className="font-mono text-[var(--text-primary)] truncate">
                   {activePlaylist.rssUrl ||
                     `https://feeds.echospace.app/${activePlaylist.id}.xml`}
                 </span>
@@ -192,7 +192,7 @@ export function PlaylistsPage() {
                 }}
               >
                 {copiedRss ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-[var(--success)]" />
                 ) : (
                   <Copy className="w-3.5 h-3.5" />
                 )}
@@ -206,21 +206,21 @@ export function PlaylistsPage() {
             {orderedRecordings.map((rec, idx) => (
               <div
                 key={rec.id}
-                className="p-3 rounded-lg bg-[#09090B] border border-[#27272F] flex items-center justify-between gap-3"
+                className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="w-6 h-6 rounded bg-[#18181D] border border-[#27272F] flex items-center justify-center font-mono text-xs text-[#A1A1AA] shrink-0">
+                  <span className="w-6 h-6 rounded bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center font-mono text-xs text-[var(--text-secondary)] shrink-0">
                     {idx + 1}
                   </span>
                   <div className="min-w-0">
                     <button
                       type="button"
                       onClick={() => navigate(`/app/recordings/${rec.id}`)}
-                      className="text-sm font-medium text-[#F4F4F5] hover:underline truncate block text-left cursor-pointer"
+                      className="text-sm font-medium text-[var(--text-primary)] hover:underline truncate block text-left cursor-pointer"
                     >
                       {rec.title}
                     </button>
-                    <p className="text-xs text-[#71717A]">
+                    <p className="text-xs text-[var(--text-muted)]">
                       {rec.authorName} ·{' '}
                       <span className="font-mono">{formatTime(rec.duration)}</span>
                     </p>
@@ -232,7 +232,7 @@ export function PlaylistsPage() {
                     type="button"
                     disabled={idx === 0}
                     onClick={() => handleMove(idx, -1)}
-                    className="p-1.5 rounded bg-[#111114] border border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5] disabled:opacity-30 cursor-pointer"
+                    className="p-1.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 cursor-pointer"
                     title="Move up"
                   >
                     <ArrowUp className="w-3.5 h-3.5" />
@@ -241,7 +241,7 @@ export function PlaylistsPage() {
                     type="button"
                     disabled={idx === orderedRecordings.length - 1}
                     onClick={() => handleMove(idx, 1)}
-                    className="p-1.5 rounded bg-[#111114] border border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5] disabled:opacity-30 cursor-pointer"
+                    className="p-1.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 cursor-pointer"
                     title="Move down"
                   >
                     <ArrowDown className="w-3.5 h-3.5" />
@@ -259,7 +259,7 @@ export function PlaylistsPage() {
             ))}
 
             {orderedRecordings.length === 0 && (
-              <p className="text-xs text-[#71717A] py-4 text-center">
+              <p className="text-xs text-[var(--text-muted)] py-4 text-center">
                 No {cfg.recordingPlural.toLowerCase()} in this{' '}
                 {cfg.collectionNoun.toLowerCase()} yet.
               </p>

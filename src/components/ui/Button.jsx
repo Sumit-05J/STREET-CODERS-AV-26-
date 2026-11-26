@@ -2,14 +2,15 @@ import React from 'react'
 
 const VARIANTS = {
   primary:
-    'bg-[#8B5CF6] hover:bg-[#7C3AED] text-white border border-[#8B5CF6]/50 shadow-sm',
+    'bg-[var(--accent-creator)] hover:bg-[var(--accent-creator-hover)] active:bg-[#AE3C1D] text-white border border-[var(--accent-creator-hover)] shadow-[0_1px_2px_rgba(24,24,22,0.08)]',
   secondary:
-    'bg-[#18181D] hover:bg-[#222229] text-[#F4F4F5] border border-[#27272F] hover:border-[#3F3F46]',
-  cyan: 'bg-[#22D3EE]/12 hover:bg-[#22D3EE]/20 text-[#22D3EE] border border-[#22D3EE]/30',
+    'bg-[var(--surface)] hover:bg-[var(--bg-secondary)] active:bg-[var(--surface-hover)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--border-strong)]',
+  cyan:
+    'bg-[var(--accent-study)] hover:bg-[var(--accent-study-hover)] active:bg-[#2A483C] text-white border border-[var(--accent-study-hover)] shadow-[0_1px_2px_rgba(24,24,22,0.08)]',
   ghost:
-    'bg-transparent hover:bg-[#18181D] text-[#A1A1AA] hover:text-[#F4F4F5] border border-transparent',
+    'bg-transparent hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent',
   danger:
-    'bg-rose-500/12 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30',
+    'bg-[#B93829]/10 hover:bg-[#B93829]/18 text-[var(--danger)] border border-[#B93829]/30',
 }
 
 const SIZES = {
@@ -29,7 +30,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/40 ${
+      className={`inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#D9532F]/35 ${
         VARIANTS[variant] || VARIANTS.primary
       } ${SIZES[size] || SIZES.md} ${className}`}
       {...props}

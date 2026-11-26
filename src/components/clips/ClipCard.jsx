@@ -16,28 +16,28 @@ export function ClipCard({ clip, onPlayClip, onDeleteClip }) {
           <Badge tone={clip.mode === 'study' ? 'cyan' : 'primary'}>
             {formatTime(clip.startTime)} – {formatTime(clip.endTime)}
           </Badge>
-          <span className="text-[11px] text-[#71717A] font-mono">
+          <span className="text-[11px] text-[var(--text-muted)] font-mono">
             {clipDuration}s
           </span>
         </div>
 
-        <h4 className="text-sm font-semibold text-[#F4F4F5] line-clamp-1">
+        <h4 className="text-sm font-semibold text-[var(--text-primary)] line-clamp-1">
           {clip.title}
         </h4>
 
-        <p className="text-xs text-[#A1A1AA] line-clamp-1">
+        <p className="text-xs text-[var(--text-secondary)] line-clamp-1">
           From: {clip.recordingTitle}
         </p>
 
         {clip.notes && (
-          <p className="text-xs text-[#D4D4D8] line-clamp-2 leading-relaxed">
+          <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
             {clip.notes}
           </p>
         )}
       </div>
 
-      <div className="pt-2.5 border-t border-[#27272F] flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3 text-[11px] text-[#71717A]">
+      <div className="pt-2.5 border-t border-[var(--border)] flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
           <span className="inline-flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {clip.createdAt}
@@ -53,7 +53,7 @@ export function ClipCard({ clip, onPlayClip, onDeleteClip }) {
             <button
               type="button"
               onClick={() => onPlayClip(clip)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#18181D] hover:bg-[#222229] border border-[#27272F] text-xs font-medium text-[#F4F4F5] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--bg-secondary)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-medium text-[var(--text-primary)] transition-colors cursor-pointer"
             >
               <Play className="w-3 h-3" />
               Play
@@ -61,7 +61,7 @@ export function ClipCard({ clip, onPlayClip, onDeleteClip }) {
           )}
           <Link
             to={`/clips/${shareId}`}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#09090B] hover:bg-[#18181D] border border-[#27272F] text-xs font-medium text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] border border-[var(--border)] text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <Share2 className="w-3 h-3" />
             Share
@@ -74,7 +74,7 @@ export function ClipCard({ clip, onPlayClip, onDeleteClip }) {
                   onDeleteClip(clip.id)
                 }
               }}
-              className="p-1.5 rounded-md bg-[#09090B] hover:bg-[#18181D] border border-[#27272F] text-[#71717A] hover:text-rose-400 transition-colors cursor-pointer"
+              className="p-1.5 rounded-md bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--danger)] transition-colors cursor-pointer"
               title="Delete clip"
             >
               <Trash2 className="w-3 h-3" />

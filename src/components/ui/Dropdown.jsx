@@ -26,16 +26,16 @@ export function Dropdown({
         {trigger || (
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-[#18181D] border border-[#27272F] text-xs font-medium text-[#F4F4F5]"
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-[var(--surface)] border border-[var(--border)] text-xs font-medium text-[var(--text-primary)]"
           >
-            Options <ChevronDown className="w-3.5 h-3.5 text-[#A1A1AA]" />
+            Options <ChevronDown className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
           </button>
         )}
       </div>
 
       {open && (
         <div
-          className={`absolute z-40 mt-1.5 min-w-44 rounded-lg bg-[#18181D] border border-[#27272F] shadow-xl py-1 ${
+          className={`absolute z-40 mt-1.5 min-w-44 rounded-lg bg-[var(--surface)] border border-[var(--border)] shadow-[0_12px_32px_rgba(24,24,22,0.12)] py-1 ${
             align === 'left' ? 'left-0' : 'right-0'
           }`}
         >
@@ -49,8 +49,8 @@ export function Dropdown({
               }}
               className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs transition-colors cursor-pointer ${
                 item.active
-                  ? 'bg-[#8B5CF6]/15 text-[#F4F4F5]'
-                  : 'text-[#A1A1AA] hover:bg-[#222229] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--accent-creator)]/10 text-[var(--accent-creator)] font-medium'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)]'
               }`}
             >
               {item.icon && <item.icon className="w-3.5 h-3.5 shrink-0" />}

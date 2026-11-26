@@ -53,7 +53,7 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
           <Logo to="/" />
@@ -61,16 +61,16 @@ export function RegisterPage() {
 
         <Card className="p-6 space-y-5">
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold text-[#F4F4F5]">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
               Create your account
             </h1>
-            <p className="text-xs text-[#A1A1AA]">
+            <p className="text-xs text-[var(--text-secondary)]">
               Start collaborating on lectures, interviews, and podcasts.
             </p>
           </div>
 
           {apiError && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-[var(--danger)]">
               {apiError}
             </div>
           )}
@@ -118,9 +118,9 @@ export function RegisterPage() {
           </form>
         </Card>
 
-        <p className="text-center text-xs text-[#A1A1AA]">
+        <p className="text-center text-xs text-[var(--text-secondary)]">
           Already have an account?{' '}
-          <Link to="/login" className="text-[#F4F4F5] hover:underline font-medium">
+          <Link to="/login" className="text-[var(--text-primary)] hover:underline font-medium">
             Sign in
           </Link>
         </p>

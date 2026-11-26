@@ -8,9 +8,14 @@ const http = axios.create({
 })
 
 let authToken = null
+let onUnauthorizedHandler = null
 
 export function setAuthToken(token) {
   authToken = token || null
+}
+
+export function setOnUnauthorized(handler) {
+  onUnauthorizedHandler = typeof handler === 'function' ? handler : null
 }
 
 export function getAuthToken() {
@@ -23,6 +28,21 @@ http.interceptors.request.use((config) => {
   }
   return config
 })
+
+http.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const url = String(err.config?.url || '')
+    const isAuthAttempt =
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/handoff/exchange')
+    if (err.response?.status === 401 && authToken && !isAuthAttempt) {
+      onUnauthorizedHandler?.()
+    }
+    return Promise.reject(err)
+  }
+)
 
 export const apiClient = {
   async healthCheck() {
@@ -43,6 +63,11 @@ export const apiClient = {
 
   async getMe() {
     const { data } = await http.get('/auth/me')
+    return data
+  },
+
+  async exchangeHandoff(code) {
+    const { data } = await http.post('/auth/handoff/exchange', { code })
     return data
   },
 

@@ -135,7 +135,7 @@ export function AudioPlayer({
   }
 
   return (
-    <div className="rounded-lg bg-[#111114] border border-[#27272F] p-4 sm:p-5 space-y-4">
+    <div className="rounded-lg bg-[var(--surface)] border border-[var(--border)] shadow-[0_2px_10px_rgba(24,24,22,0.04)] p-4 sm:p-5 space-y-4">
       {/* Waveform + Markers */}
       <Waveform
         audioUrl={recording.audioUrl}
@@ -176,7 +176,7 @@ export function AudioPlayer({
       />
 
       {clipRange && (
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-300">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-md bg-[var(--accent-study)]/10 border border-[var(--accent-study)]/25 text-xs text-[var(--success)]">
           <span>
             Playing interval: <strong className="font-mono">{formatTime(clipRange.startTime)} – {formatTime(clipRange.endTime)}</strong>
           </span>
@@ -184,7 +184,7 @@ export function AudioPlayer({
             <button
               type="button"
               onClick={onClearClipRange}
-              className="text-[11px] text-[#A1A1AA] hover:text-[#F4F4F5] cursor-pointer"
+              className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
             >
               Exit interval
             </button>
@@ -198,7 +198,7 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={() => handleSkip(-5)}
-            className="p-2 rounded-lg text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#18181D] transition-colors cursor-pointer"
+            className="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer"
             title="Back 5s"
           >
             <RotateCcw className="w-4 h-4" />
@@ -207,10 +207,10 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={handleTogglePlay}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors shadow-xs cursor-pointer ${
               mode === 'study'
-                ? 'bg-[#22D3EE] hover:bg-[#06B6D4] text-[#09090B]'
-                : 'bg-[#8B5CF6] hover:bg-[#7C3AED] text-white'
+                ? 'bg-[var(--accent-study)] hover:bg-[var(--accent-study-hover)] text-white'
+                : 'bg-[var(--accent-creator)] hover:bg-[var(--accent-creator-hover)] text-white'
             }`}
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
@@ -224,31 +224,31 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={() => handleSkip(5)}
-            className="p-2 rounded-lg text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#18181D] transition-colors cursor-pointer"
+            className="p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer"
             title="Forward 5s"
           >
             <RotateCw className="w-4 h-4" />
           </button>
 
-          <div className="ml-2 font-mono text-xs text-[#F4F4F5] bg-[#09090B] border border-[#27272F] px-2.5 py-1.5 rounded-md">
+          <div className="ml-2 font-mono text-xs text-[var(--text-primary)] bg-[var(--bg-primary)] border border-[var(--border)] px-2.5 py-1.5 rounded-md">
             <span>{formatTime(currentTime)}</span>
-            <span className="text-[#71717A] mx-1">/</span>
-            <span className="text-[#A1A1AA]">{formatTime(duration)}</span>
+            <span className="text-[var(--text-muted)] mx-1">/</span>
+            <span className="text-[var(--text-secondary)]">{formatTime(duration)}</span>
           </div>
         </div>
 
         {/* Speed, Loop, Volume */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <div className="flex items-center bg-[#09090B] border border-[#27272F] rounded-lg p-0.5">
+          <div className="flex items-center bg-[var(--bg-primary)] border border-[var(--border)] rounded-md p-0.5">
             {SPEEDS.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setSpeed(s)}
-                className={`px-2 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer ${
+                className={`px-2 py-1 text-[11px] font-medium rounded transition-colors cursor-pointer ${
                   speed === s
-                    ? 'bg-[#18181D] text-[#F4F4F5]'
-                    : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                    ? 'bg-[var(--surface)] text-[var(--text-primary)] shadow-xs'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {s}x
@@ -259,10 +259,10 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={() => setIsLooping((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-colors cursor-pointer ${
               isLooping
-                ? 'bg-[#8B5CF6]/15 border-[#8B5CF6]/40 text-[#A78BFA]'
-                : 'bg-[#09090B] border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5]'
+                ? 'bg-[var(--accent-creator)]/10 border-[var(--accent-creator)]/30 text-[var(--accent-creator)]'
+                : 'bg-[var(--bg-primary)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
             title="Toggle loop playback"
           >
@@ -273,7 +273,7 @@ export function AudioPlayer({
           <button
             type="button"
             onClick={handleToggleMute}
-            className="p-2 rounded-lg bg-[#09090B] border border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors cursor-pointer"
+            className="p-2 rounded-md bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? (
@@ -286,9 +286,9 @@ export function AudioPlayer({
       </div>
 
       {/* Chapter Timeline + Primary Workspace Actions */}
-      <div className="pt-3 border-t border-[#27272F] flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="pt-3 border-t border-[var(--border)] flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
-          <span className="text-[11px] uppercase tracking-wider text-[#71717A] font-medium mr-1 shrink-0">
+          <span className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] font-semibold mr-1 shrink-0">
             Chapters
           </span>
           {(recording.chapters || []).map((ch) => {
@@ -308,11 +308,11 @@ export function AudioPlayer({
                 }}
                 className={`shrink-0 px-2.5 py-1 rounded-md text-xs border transition-colors cursor-pointer ${
                   isCurrent
-                    ? 'bg-[#18181D] border-[#3F3F46] text-[#F4F4F5]'
-                    : 'bg-[#09090B] border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5]'
+                    ? 'bg-[#181816] border-[#181816] text-white'
+                    : 'bg-[var(--bg-primary)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 }`}
               >
-                <span className="font-mono text-[10px] text-[#71717A] mr-1.5">
+                <span className={`font-mono text-[10px] mr-1.5 ${isCurrent ? 'text-[#DFDBD2]' : 'text-[var(--text-muted)]'}`}>
                   {formatTime(ch.startTime)}
                 </span>
                 {ch.title}
@@ -346,7 +346,7 @@ export function AudioPlayer({
             {highlightStart !== null && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/12 border border-rose-500/35 text-xs">
                 <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse" />
-                <span className="text-rose-300 font-mono">
+                <span className="text-[var(--danger)] font-mono">
                   {formatTime(highlightStart)} → {formatTime(currentTime)}
                 </span>
                 <button
@@ -359,7 +359,7 @@ export function AudioPlayer({
                 <button
                   type="button"
                   onClick={() => onCancelHighlight?.()}
-                  className="px-1.5 py-0.5 text-[11px] text-[#A1A1AA] hover:text-[#F4F4F5] cursor-pointer"
+                  className="px-1.5 py-0.5 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
                 >
                   Cancel
                 </button>

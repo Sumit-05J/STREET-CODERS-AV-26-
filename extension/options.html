@@ -18,6 +18,14 @@
           <span>Web App Base URL</span>
           <input id="web-url" type="url" required placeholder="http://localhost:5173" />
         </label>
+        <label class="field">
+          <span>Appearance Theme</span>
+          <select id="theme-pref">
+            <option value="system">System (Auto)</option>
+            <option value="light">Light Editorial</option>
+            <option value="dark">Dark Editorial</option>
+          </select>
+        </label>
         <p id="saved-msg" class="success hidden">Configuration saved.</p>
         <button type="submit" class="btn btn-primary">Save Settings</button>
       </form>

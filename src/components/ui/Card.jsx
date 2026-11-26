@@ -9,12 +9,12 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-lg border border-[#27272F] ${
-        elevated ? 'bg-[#18181D]' : 'bg-[#111114]'
+      className={`rounded-lg border border-[var(--border)] ${
+        elevated ? 'bg-[var(--bg-secondary)]/75' : 'bg-[var(--surface)]'
       } ${
         interactive
-          ? 'transition-colors duration-150 hover:border-[#3F3F46] hover:bg-[#16161B]'
-          : ''
+          ? 'transition-all duration-150 hover:border-[var(--border-strong)] hover:shadow-[0_4px_14px_rgba(24,24,22,0.05)]'
+          : 'shadow-[0_1px_2px_rgba(24,24,22,0.03)]'
       } ${className}`}
       {...props}
     >

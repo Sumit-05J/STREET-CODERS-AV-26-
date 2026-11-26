@@ -1,6 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react'
 import WaveSurfer from 'wavesurfer.js'
 import { TimelineMarker } from './TimelineMarker'
+import { useTheme } from '../../utils/theme'
+
+function getWaveformPalette(mode, resolvedTheme) {
+  const isDark = resolvedTheme === 'dark'
+  return {
+    waveColor: isDark ? '#42453E' : '#CFCAC0',
+    progressColor:
+      mode === 'study'
+        ? isDark
+          ? '#5D947D'
+          : '#3F6A58'
+        : isDark
+          ? '#E86B48'
+          : '#D9532F',
+    cursorColor: isDark ? '#F2F0E9' : '#181816',
+  }
+}
 
 export function Waveform({
   audioUrl,
@@ -20,9 +37,15 @@ export function Waveform({
 }) {
   const containerRef = useRef(null)
   const internalWsRef = useRef(null)
+  const { resolvedTheme } = useTheme()
   const [duration, setDuration] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    if (!internalWsRef.current) return
+    internalWsRef.current.setOptions(getWaveformPalette(mode, resolvedTheme))
+  }, [mode, resolvedTheme])
 
   useEffect(() => {
     const container = containerRef.current
@@ -32,7 +55,7 @@ export function Waveform({
     setIsLoading(true)
     setLoadError('')
 
-    const accent = mode === 'study' ? '#22D3EE' : '#8B5CF6'
+    const palette = getWaveformPalette(mode, resolvedTheme)
 
     const audioEl = new Audio()
     audioEl.crossOrigin = 'anonymous'
@@ -40,9 +63,9 @@ export function Waveform({
 
     const ws = WaveSurfer.create({
       container,
-      waveColor: '#3F3F46',
-      progressColor: accent,
-      cursorColor: '#F4F4F5',
+      waveColor: palette.waveColor,
+      progressColor: palette.progressColor,
+      cursorColor: palette.cursorColor,
       cursorWidth: 2,
       barWidth: 2,
       barGap: 2,
@@ -111,23 +134,23 @@ export function Waveform({
       {/* Clip highlight overlay if active */}
       {clipRange && duration > 0 && clipWidthPct > 0 && (
         <div
-          className="pointer-events-none absolute top-0 bottom-6 bg-[#8B5CF6]/15 border-x border-[#8B5CF6]/60 z-0"
+          className="pointer-events-none absolute top-0 bottom-6 bg-[var(--accent-creator)]/12 border-x border-[var(--accent-creator)]/50 z-0"
           style={{ left: `${clipStartPct}%`, width: `${clipWidthPct}%` }}
         />
       )}
 
       {/* WaveSurfer canvas */}
-      <div className="relative rounded-lg bg-[#09090B] border border-[#27272F] px-3 py-3 overflow-hidden">
+      <div className="relative rounded-md bg-[var(--bg-primary)] border border-[var(--border)] px-3 py-3 overflow-hidden">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#09090B]/80 z-20">
-            <span className="text-xs text-[#A1A1AA] animate-pulse">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]/85 z-20">
+            <span className="text-xs text-[var(--text-secondary)] animate-pulse">
               Rendering waveform...
             </span>
           </div>
         )}
         {loadError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#09090B]/90 z-20 px-4 text-center">
-            <span className="text-xs text-rose-400">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]/95 z-20 px-4 text-center">
+            <span className="text-xs text-[var(--danger)]">
               Audio playback error: {loadError}
             </span>
           </div>
@@ -137,7 +160,7 @@ export function Waveform({
 
       {/* Annotation & Clip marker track */}
       {(annotations.length > 0 || clips.length > 0) && duration > 0 && (
-        <div className="relative h-6 mt-1.5 rounded bg-[#09090B] border border-[#27272F]/70">
+        <div className="relative h-6 mt-1.5 rounded bg-[var(--bg-primary)] border border-[var(--border)]/70">
           <div className="absolute inset-x-0 top-1/2 h-px bg-[#27272F]" />
           {clips.map((clip) => {
             const leftPct = Math.max(0, Math.min(98, (clip.startTime / duration) * 100))

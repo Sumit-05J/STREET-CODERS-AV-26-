@@ -1,17 +1,32 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EchoSpace — Listen. Understand. Discuss. Create.</title>
+    <script>
+      ;(function () {
+        try {
+          var pref = localStorage.getItem('echospace-theme') || 'system'
+          var isDark =
+            pref === 'dark' ||
+            (pref === 'system' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var resolved = isDark ? 'dark' : 'light'
+          document.documentElement.dataset.theme = resolved
+          document.documentElement.classList.toggle('dark', isDark)
+        } catch (e) {}
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body class="bg-[#09090B] text-[#F4F4F5] antialiased selection:bg-[#8B5CF6]/30 selection:text-[#F4F4F5]">
+  <body class="bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased selection:bg-[var(--accent-creator)]/20 selection:text-[var(--text-primary)]">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

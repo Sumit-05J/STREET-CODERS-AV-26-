@@ -284,7 +284,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
       subtitle={`Add a new ${cfg.recordingNoun.toLowerCase()} to your ${cfg.name} workspace.`}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-3 gap-1 bg-[#09090B] p-1 rounded-lg border border-[#27272F]">
+        <div className="grid grid-cols-3 gap-1 bg-[var(--bg-primary)] p-1 rounded-lg border border-[var(--border)]">
           {[
             { id: 'upload', label: 'Upload File' },
             { id: 'import', label: 'Import URL / RSS' },
@@ -300,8 +300,8 @@ export function UploadRecordingModal({ isOpen, onClose }) {
               }}
               className={`py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
                 sourceTab === tab.id
-                  ? 'bg-[#18181D] text-[#F4F4F5]'
-                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               {tab.label}
@@ -310,7 +310,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
         </div>
 
         {sourceTab === 'upload' && (
-          <label className="block p-3.5 rounded-lg bg-[#09090B] border border-dashed border-[#27272F] hover:border-[#8B5CF6]/60 transition-colors cursor-pointer">
+          <label className="block p-3.5 rounded-lg bg-[var(--bg-primary)] border border-dashed border-[var(--border)] hover:border-[var(--accent-creator)]/60 transition-colors cursor-pointer">
             <input
               type="file"
               accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.mp4,.mov,.mkv,.m4v,.avi,audio/*,video/*"
@@ -318,16 +318,16 @@ export function UploadRecordingModal({ isOpen, onClose }) {
               className="hidden"
             />
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#18181D] border border-[#27272F] flex items-center justify-center text-[#8B5CF6] shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--accent-creator)] shrink-0">
                 <Music2 className="w-4 h-4" />
               </div>
               <div className="text-xs min-w-0">
-                <p className="font-medium text-[#F4F4F5] truncate">
+                <p className="font-medium text-[var(--text-primary)] truncate">
                   {file
                     ? `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`
                     : 'Click to select audio (.mp3, .wav, .m4a, .ogg) or video (.mp4, .mov, .mkv)'}
                 </p>
-                <p className="text-[#A1A1AA]">
+                <p className="text-[var(--text-secondary)]">
                   {duration > 0
                     ? `Detected duration: ${duration}s`
                     : 'Max 100 MB · Validated on server'}
@@ -364,28 +364,28 @@ export function UploadRecordingModal({ isOpen, onClose }) {
             </div>
 
             {rssFeed && (
-              <div className="p-3 rounded-lg bg-[#09090B] border border-[#27272F] space-y-2 max-h-48 overflow-y-auto">
-                <p className="text-xs font-semibold text-[#F4F4F5]">
+              <div className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] space-y-2 max-h-48 overflow-y-auto">
+                <p className="text-xs font-semibold text-[var(--text-primary)]">
                   {rssFeed.title} ({rssFeed.episodes.length} episodes)
                 </p>
                 {rssFeed.episodes.map((ep, idx) => (
                   <div
                     key={`${ep.enclosureUrl}-${idx}`}
-                    className="flex items-center justify-between gap-2 py-1.5 border-t border-[#27272F]"
+                    className="flex items-center justify-between gap-2 py-1.5 border-t border-[var(--border)]"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       {ep.artworkUrl && (
                         <img
                           src={ep.artworkUrl}
                           alt=""
-                          className="w-8 h-8 rounded object-cover shrink-0 border border-[#27272F]"
+                          className="w-8 h-8 rounded object-cover shrink-0 border border-[var(--border)]"
                         />
                       )}
                       <div className="min-w-0">
-                        <p className="text-xs text-[#E4E4E7] truncate">
+                        <p className="text-xs text-[var(--text-primary)] truncate">
                           {ep.title}
                         </p>
-                        <p className="text-[10px] text-[#71717A] font-mono">
+                        <p className="text-[10px] text-[var(--text-muted)] font-mono">
                           {ep.duration > 0 ? formatTime(ep.duration) : 'Audio'}
                         </p>
                       </div>
@@ -404,16 +404,16 @@ export function UploadRecordingModal({ isOpen, onClose }) {
             )}
 
             {importJob && (
-              <div className="p-3 rounded-lg bg-[#09090B] border border-[#27272F] space-y-1.5 text-xs">
+              <div className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] space-y-1.5 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-[#F4F4F5]">
+                  <span className="font-medium text-[var(--text-primary)]">
                     Status: {importJob.status}
                     {importJob.metadata?.stage && importJob.metadata.stage !== importJob.status
                       ? ` (${importJob.metadata.stage})`
                       : ''}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[#A1A1AA]">
+                    <span className="font-mono text-[var(--text-secondary)]">
                       {importJob.progress}%
                     </span>
                     {['QUEUED', 'PROCESSING'].includes(importJob.status) && (
@@ -423,7 +423,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
                           const cancelled = await apiClient.cancelImportJob(importJob.id)
                           setImportJob(cancelled)
                         }}
-                        className="text-rose-400 hover:underline cursor-pointer"
+                        className="text-[var(--danger)] hover:underline cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -431,7 +431,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
                   </div>
                 </div>
                 {importJob.error && (
-                  <div className="flex items-center justify-between gap-2 text-rose-400">
+                  <div className="flex items-center justify-between gap-2 text-[var(--danger)]">
                     <span>{importJob.error}</span>
                     <button
                       type="button"
@@ -439,7 +439,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
                         const retried = await apiClient.retryImportJob(importJob.id)
                         setImportJob(retried)
                       }}
-                      className="inline-flex items-center gap-1 text-[#22D3EE] hover:underline cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 text-[var(--accent-study)] hover:underline cursor-pointer shrink-0"
                     >
                       <RefreshCw className="w-3 h-3" />
                       Retry
@@ -462,7 +462,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
                 setError('')
               }}
             />
-            <p className="text-[11px] text-[#71717A] flex items-center gap-1.5">
+            <p className="text-[11px] text-[var(--text-muted)] flex items-center gap-1.5">
               <Link2 className="w-3 h-3 shrink-0" />
               Stored as an external media link with timestamped annotations (no
               media downloading).
@@ -472,13 +472,13 @@ export function UploadRecordingModal({ isOpen, onClose }) {
 
         {submitting && sourceTab === 'upload' && (
           <div className="space-y-1">
-            <div className="h-1.5 w-full bg-[#18181D] rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#8B5CF6] transition-all duration-150"
+                className="h-full bg-[var(--accent-creator)] transition-all duration-150"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-[11px] text-[#A1A1AA] text-right">
+            <p className="text-[11px] text-[var(--text-secondary)] text-right">
               Uploading... {progress}%
             </p>
           </div>
@@ -520,13 +520,13 @@ export function UploadRecordingModal({ isOpen, onClose }) {
             />
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-[#A1A1AA]">
+              <label className="block text-xs font-medium text-[var(--text-secondary)]">
                 {cfg.collectionNoun}
               </label>
               <select
                 value={playlistId}
                 onChange={(e) => setPlaylistId(e.target.value)}
-                className="w-full h-9 px-3 rounded-lg bg-[#09090B] border border-[#27272F] text-sm text-[#F4F4F5] focus:outline-none focus:border-[#8B5CF6]"
+                className="w-full h-9 px-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-creator)]"
               >
                 <option value="">None</option>
                 {modePlaylists.map((pl) => (

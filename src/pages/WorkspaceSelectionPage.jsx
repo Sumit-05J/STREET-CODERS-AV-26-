@@ -124,8 +124,8 @@ export function WorkspaceSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col">
-      <header className="h-16 px-4 sm:px-8 border-b border-[#27272F] flex items-center justify-between">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col">
+      <header className="h-16 px-4 sm:px-8 border-b border-[var(--border)] flex items-center justify-between">
         <Logo to="/" />
         <div className="flex items-center gap-2">
           <Button
@@ -157,7 +157,7 @@ export function WorkspaceSelectionPage() {
         {workspaces.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-[#F4F4F5]">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 My Workspaces ({workspaces.length})
               </h2>
             </div>
@@ -176,21 +176,21 @@ export function WorkspaceSelectionPage() {
                       </Badge>
                       <Badge tone="neutral">{ws.myRole}</Badge>
                     </div>
-                    <h3 className="text-sm font-semibold text-[#F4F4F5] truncate">
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">
                       {ws.name}
                     </h3>
                     {ws.description && (
-                      <p className="text-xs text-[#A1A1AA] line-clamp-2">
+                      <p className="text-xs text-[var(--text-secondary)] line-clamp-2">
                         {ws.description}
                       </p>
                     )}
                   </div>
-                  <div className="pt-2.5 border-t border-[#27272F] flex items-center justify-between text-xs text-[#71717A]">
+                  <div className="pt-2.5 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--text-muted)]">
                     <span className="inline-flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
                       {ws._count?.members ?? 1} members
                     </span>
-                    <span className="inline-flex items-center gap-1 text-[#A1A1AA]">
+                    <span className="inline-flex items-center gap-1 text-[var(--text-secondary)]">
                       Open <ArrowRight className="w-3 h-3" />
                     </span>
                   </div>
@@ -202,14 +202,14 @@ export function WorkspaceSelectionPage() {
 
         <section className="space-y-6">
           <div className="text-center space-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#8B5CF6]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[var(--accent-creator)]">
               Choose Your Mode
             </span>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#F4F4F5]">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
               How are you using EchoSpace today?
             </h1>
             {busyMode && (
-              <p className="text-xs text-[#22D3EE]">
+              <p className="text-xs text-[var(--accent-study)]">
                 Loading {busyMode === 'study' ? 'Study' : 'Creator'} workspace...
               </p>
             )}
@@ -250,7 +250,7 @@ export function WorkspaceSelectionPage() {
         subtitle="You will automatically become the workspace OWNER."
       >
         <form onSubmit={handleCreateWorkspace} className="space-y-4">
-          <div className="grid grid-cols-2 gap-1 bg-[#09090B] p-1 rounded-lg border border-[#27272F]">
+          <div className="grid grid-cols-2 gap-1 bg-[var(--bg-primary)] p-1 rounded-lg border border-[var(--border)]">
             {['study', 'creator'].map((m) => (
               <button
                 key={m}
@@ -258,8 +258,8 @@ export function WorkspaceSelectionPage() {
                 onClick={() => setWsMode(m)}
                 className={`py-1.5 text-xs font-medium rounded-md capitalize cursor-pointer ${
                   wsMode === m
-                    ? 'bg-[#18181D] text-[#F4F4F5]'
-                    : 'text-[#A1A1AA]'
+                    ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)]'
                 }`}
               >
                 {m} Mode
@@ -281,7 +281,7 @@ export function WorkspaceSelectionPage() {
             value={wsDesc}
             onChange={(e) => setWsDesc(e.target.value)}
           />
-          {modalError && <p className="text-xs text-rose-400">{modalError}</p>}
+          {modalError && <p className="text-xs text-[var(--danger)]">{modalError}</p>}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setCreateOpen(false)}>
               Cancel
@@ -309,7 +309,7 @@ export function WorkspaceSelectionPage() {
               setModalError('')
             }}
           />
-          {modalError && <p className="text-xs text-rose-400">{modalError}</p>}
+          {modalError && <p className="text-xs text-[var(--danger)]">{modalError}</p>}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setJoinOpen(false)}>
               Cancel

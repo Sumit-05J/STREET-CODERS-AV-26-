@@ -60,7 +60,7 @@ export function ClipSharePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090B] flex items-center justify-center text-sm text-[#A1A1AA]">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center text-sm text-[var(--text-secondary)]">
         Loading clip...
       </div>
     )
@@ -68,7 +68,7 @@ export function ClipSharePage() {
 
   if (!clip) {
     return (
-      <div className="min-h-screen bg-[#09090B] flex items-center justify-center text-sm text-[#A1A1AA]">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center text-sm text-[var(--text-secondary)]">
         Clip not found.
       </div>
     )
@@ -88,15 +88,15 @@ export function ClipSharePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5]">
-      <header className="border-b border-[#27272F] bg-[#09090B]/90 backdrop-blur-md">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <header className="border-b border-[var(--border)] bg-[var(--bg-primary)]/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Logo to="/" size="sm" />
           <div className="flex items-center gap-2">
             <Button size="sm" variant="secondary" onClick={handleCopyLink}>
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-[var(--success)]" />
                   Link Copied
                 </>
               ) : (
@@ -123,30 +123,30 @@ export function ClipSharePage() {
               <Badge tone={clip.mode === 'study' ? 'cyan' : 'primary'}>
                 {clip.mode === 'study' ? 'Study Highlight' : 'Podcast Clip'}
               </Badge>
-              <span className="inline-flex items-center gap-1 text-xs font-mono text-[#22D3EE]">
+              <span className="inline-flex items-center gap-1 text-xs font-mono text-[var(--accent-study)]">
                 <Clock className="w-3.5 h-3.5" />
                 {formatTime(clip.startTime)} – {formatTime(clip.endTime)}
               </span>
             </div>
-            <span className="inline-flex items-center gap-1 text-xs text-[#A1A1AA]">
+            <span className="inline-flex items-center gap-1 text-xs text-[var(--text-secondary)]">
               <Eye className="w-3.5 h-3.5" />
               {clip.views} views
             </span>
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#F4F4F5]">
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
               {clip.title}
             </h1>
-            <p className="text-sm text-[#A1A1AA] mt-1">
+            <p className="text-sm text-[var(--text-secondary)] mt-1">
               From{' '}
-              <span className="text-[#F4F4F5] font-medium">
+              <span className="text-[var(--text-primary)] font-medium">
                 {clip.recordingTitle}
               </span>{' '}
               · Clipped by {clip.authorName}
             </p>
             {clip.notes && (
-              <p className="text-sm text-[#D4D4D8] mt-3 p-3 rounded-lg bg-[#09090B] border border-[#27272F]">
+              <p className="text-sm text-[var(--text-secondary)] mt-3 p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)]">
                 {clip.notes}
               </p>
             )}
@@ -161,7 +161,7 @@ export function ClipSharePage() {
               seekToTime={{ time: clip.startTime }}
             />
           ) : (
-            <div className="p-4 rounded-lg bg-[#09090B] border border-[#27272F] text-xs text-[#A1A1AA]">
+            <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-xs text-[var(--text-secondary)]">
               This clip belongs to an external media link without locally hosted audio.
             </div>
           )}
@@ -170,19 +170,19 @@ export function ClipSharePage() {
         {/* Associated Discussion */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-[#F4F4F5]">
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">
               Associated Discussion
             </h2>
             <Link
               to={`/app/recordings/${clip.recordingId}`}
-              className="text-xs text-[#22D3EE] hover:underline"
+              className="text-xs text-[var(--accent-study)] hover:underline"
             >
               Join full discussion →
             </Link>
           </div>
 
           {associatedAnnotations.length === 0 ? (
-            <Card className="p-5 text-xs text-[#A1A1AA]">
+            <Card className="p-5 text-xs text-[var(--text-secondary)]">
               No annotations within this clip window yet. Open the full
               recording to start a thread.
             </Card>

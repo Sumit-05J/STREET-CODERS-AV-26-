@@ -16,7 +16,7 @@ export function WorkspaceCard({
     <Card
       interactive
       className={`p-6 flex flex-col justify-between gap-6 transition-all ${
-        isActive ? 'border-[#8B5CF6]/60 bg-[#141418]' : ''
+        isActive ? 'border-[var(--accent-creator)]/60 bg-[#141418]' : ''
       }`}
     >
       <div className="space-y-4">
@@ -24,14 +24,14 @@ export function WorkspaceCard({
           <div
             className={`w-11 h-11 rounded-lg border flex items-center justify-center ${
               isStudy
-                ? 'bg-[#22D3EE]/10 border-[#22D3EE]/30 text-[#22D3EE]'
-                : 'bg-[#8B5CF6]/10 border-[#8B5CF6]/30 text-[#A78BFA]'
+                ? 'bg-[var(--accent-study)]/10 border-[var(--accent-study)]/30 text-[var(--accent-study)]'
+                : 'bg-[var(--accent-creator)]/10 border-[var(--accent-creator)]/30 text-[var(--accent-creator)]'
             }`}
           >
             <Icon className="w-5 h-5" />
           </div>
           {isActive && (
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[#18181D] border border-[#27272F] text-[#F4F4F5]">
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)]">
               Current Workspace
             </span>
           )}
@@ -43,23 +43,23 @@ export function WorkspaceCard({
           >
             {modeConfig.name}
           </span>
-          <h2 className="text-2xl font-semibold text-[#F4F4F5] mt-1">
+          <h2 className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
             {modeConfig.tagline}
           </h2>
-          <p className="text-sm text-[#A1A1AA] mt-2 leading-relaxed">
+          <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">
             {modeConfig.description}
           </p>
         </div>
 
-        <ul className="space-y-2 pt-2 border-t border-[#27272F]">
+        <ul className="space-y-2 pt-2 border-t border-[var(--border)]">
           {features.map((feat) => (
             <li
               key={feat}
-              className="flex items-center gap-2 text-xs text-[#D4D4D8]"
+              className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"
             >
               <Check
                 className={`w-3.5 h-3.5 shrink-0 ${
-                  isStudy ? 'text-[#22D3EE]' : 'text-[#A78BFA]'
+                  isStudy ? 'text-[var(--accent-study)]' : 'text-[var(--accent-creator)]'
                 }`}
               />
               <span>{feat}</span>

@@ -4,6 +4,7 @@ import { Menu, Plus, LogOut, Settings, Layers, Bell, CheckCheck } from 'lucide-r
 import { Button } from '../ui/Button'
 import { Dropdown } from '../ui/Dropdown'
 import { Avatar } from '../common/Avatar'
+import { ThemeSwitcher } from '../common/ThemeSwitcher'
 import { useEchoStore } from '../../store/useEchoStore'
 import { getModeConfig } from '../../config/modeConfig'
 import { formatTime } from '../../utils/time'
@@ -48,22 +49,22 @@ export function Navbar({ onOpenSidebar, onOpenUpload }) {
   }
 
   return (
-    <header className="h-14 px-4 lg:px-6 border-b border-[#27272F] bg-[#09090B]/90 backdrop-blur-md flex items-center justify-between gap-4 shrink-0">
+    <header className="h-14 px-4 lg:px-6 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-md flex items-center justify-between gap-4 shrink-0">
       <div className="flex items-center gap-3 min-w-0">
         <button
           type="button"
           onClick={onOpenSidebar}
-          className="lg:hidden p-1.5 rounded-lg text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#18181D] cursor-pointer"
+          className="lg:hidden p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] cursor-pointer"
           aria-label="Open navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium text-[#F4F4F5] truncate">
+          <span className="text-sm font-semibold text-[var(--text-primary)] truncate">
             {workspaceTitle}
           </span>
-          <span className="hidden sm:inline-block text-[#27272F]">/</span>
+          <span className="hidden sm:inline-block text-[#CCC7BC]">/</span>
           <span className={`hidden sm:inline-block text-xs font-medium ${cfg.accentText}`}>
             {cfg.name}
           </span>
@@ -71,6 +72,7 @@ export function Navbar({ onOpenSidebar, onOpenUpload }) {
       </div>
 
       <div className="flex items-center gap-2.5">
+        <ThemeSwitcher />
         <Button
           size="sm"
           variant={mode === 'study' ? 'cyan' : 'primary'}
@@ -86,28 +88,28 @@ export function Navbar({ onOpenSidebar, onOpenUpload }) {
           <button
             type="button"
             onClick={() => setNotifOpen((p) => !p)}
-            className="relative p-2 rounded-lg text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#18181D] transition-colors cursor-pointer"
+            className="relative p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[#8B5CF6] text-[10px] font-semibold text-white flex items-center justify-center">
+              <span className="absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-[var(--accent-creator)] text-[10px] font-semibold text-white flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-lg bg-[#111114] border border-[#27272F] shadow-2xl z-50 overflow-hidden">
-              <div className="px-3.5 py-2.5 border-b border-[#27272F] flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#F4F4F5]">
+            <div className="absolute right-0 mt-2 w-80 rounded-lg bg-[var(--surface)] border border-[var(--border)] shadow-[0_16px_40px_rgba(24,24,22,0.14)] z-50 overflow-hidden">
+              <div className="px-3.5 py-2.5 border-b border-[var(--border)] bg-[var(--bg-primary)]/70 flex items-center justify-between">
+                <span className="text-xs font-semibold text-[var(--text-primary)]">
                   Notifications
                 </span>
                 {unreadCount > 0 && (
                   <button
                     type="button"
                     onClick={() => markAllNotificationsRead().catch(() => {})}
-                    className="inline-flex items-center gap-1 text-[11px] text-[#22D3EE] hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[var(--accent-creator)] hover:underline cursor-pointer"
                   >
                     <CheckCheck className="w-3 h-3" />
                     Mark all read
@@ -115,9 +117,9 @@ export function Navbar({ onOpenSidebar, onOpenUpload }) {
                 )}
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-[#27272F]">
+              <div className="max-h-80 overflow-y-auto divide-y divide-[var(--border)]">
                 {notifications.length === 0 ? (
-                  <div className="p-5 text-center text-xs text-[#71717A]">
+                  <div className="p-5 text-center text-xs text-[var(--text-muted)]">
                     No notifications yet.
                   </div>
                 ) : (
@@ -126,21 +128,21 @@ export function Navbar({ onOpenSidebar, onOpenUpload }) {
                       key={n.id}
                       type="button"
                       onClick={() => handleNotificationClick(n)}
-                      className={`w-full text-left p-3 hover:bg-[#18181D] transition-colors cursor-pointer ${
-                        !n.isRead ? 'bg-[#18181D]/60' : ''
+                      className={`w-full text-left p-3 hover:bg-[var(--bg-primary)] transition-colors cursor-pointer ${
+                        !n.isRead ? 'bg-[var(--bg-secondary)]/45' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs text-[#F4F4F5] leading-snug">
+                        <p className="text-xs text-[var(--text-primary)] leading-snug">
                           {n.message}
                         </p>
                         {!n.isRead && (
-                          <span className="w-2 h-2 rounded-full bg-[#22D3EE] shrink-0 mt-1" />
+                          <span className="w-2 h-2 rounded-full bg-[var(--accent-creator)] shrink-0 mt-1" />
                         )}
                       </div>
-                      <p className="text-[11px] text-[#71717A] mt-1 truncate">
+                      <p className="text-[11px] text-[var(--text-muted)] mt-1 truncate">
                         {n.episodeTitle} ·{' '}
-                        <span className="font-mono text-[#A1A1AA]">
+                        <span className="font-mono text-[var(--text-secondary)]">
                           {formatTime(n.timestamp)}
                         </span>
                       </p>
@@ -154,13 +156,13 @@ export function Navbar({ onOpenSidebar, onOpenUpload }) {
 
         <Dropdown
           trigger={
-            <div className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-[#18181D] transition-colors">
+            <div className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-md hover:bg-[var(--bg-secondary)] transition-colors">
               <Avatar
                 name={user?.name || 'User'}
-                color={user?.avatarColor || '#8B5CF6'}
+                color={user?.avatarColor || '#D9532F'}
                 size="sm"
               />
-              <span className="hidden md:inline text-xs font-medium text-[#F4F4F5]">
+              <span className="hidden md:inline text-xs font-medium text-[var(--text-primary)]">
                 {user?.name}
               </span>
             </div>

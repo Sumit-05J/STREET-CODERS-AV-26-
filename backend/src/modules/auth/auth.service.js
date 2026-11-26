@@ -1,8 +1,12 @@
+import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../../config/prisma.js'
 import { env } from '../../config/env.js'
 import { AppError } from '../../utils/errors.js'
+
+const HANDOFF_TTL_MS = 60_000
+const handoffCodes = new Map()
 
 const AVATAR_COLORS = ['#8B5CF6', '#22D3EE', '#F59E0B', '#10B981', '#EC4899']
 
@@ -60,4 +64,34 @@ export async function loginUser({ email, password }) {
 
   const token = signToken(user)
   return { user: sanitizeUser(user), token }
+}
+
+export function createHandoffCode(userId) {
+  const now = Date.now()
+  for (const [k, entry] of handoffCodes.entries()) {
+    if (entry.expiresAt <= now) handoffCodes.delete(k)
+  }
+  const code = crypto.randomBytes(24).toString('hex')
+  handoffCodes.set(code, { userId, expiresAt: now + HANDOFF_TTL_MS })
+  return { code, expiresIn: Math.floor(HANDOFF_TTL_MS / 1000) }
+}
+
+export async function exchangeHandoffCode(code) {
+  const entry = handoffCodes.get(code)
+  handoffCodes.delete(code) // Single-use: always consume immediately
+
+  if (!entry || entry.expiresAt <= Date.now()) {
+    throw new AppError(
+      401,
+      'Handoff code is invalid or expired. Please sign in again.',
+      'INVALID_HANDOFF'
+    )
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: entry.userId } })
+  if (!user) {
+    throw new AppError(401, 'User account not found.', 'UNAUTHORIZED')
+  }
+
+  return { user: sanitizeUser(user), token: signToken(user) }
 }

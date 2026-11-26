@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { asyncHandler } from '../../utils/errors.js'
-import { loginUser, registerUser } from './auth.service.js'
+import {
+  createHandoffCode,
+  exchangeHandoffCode,
+  loginUser,
+  registerUser,
+} from './auth.service.js'
 
 export const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').max(80),
@@ -25,4 +30,18 @@ export const login = asyncHandler(async (req, res) => {
 
 export const me = asyncHandler(async (req, res) => {
   res.json({ user: req.user })
+})
+
+export const handoffSchema = z.object({
+  code: z.string().min(16).max(128),
+})
+
+export const createHandoff = asyncHandler(async (req, res) => {
+  const result = createHandoffCode(req.user.id)
+  res.status(201).json(result)
+})
+
+export const exchangeHandoff = asyncHandler(async (req, res) => {
+  const result = await exchangeHandoffCode(req.body.code)
+  res.json(result)
 })

@@ -66,43 +66,43 @@ export function AuthPage({ mode = 'login' }) {
   const copy = titles[mode] || titles.login
 
   return (
-    <div className="min-h-screen bg-[#09090B] flex flex-col justify-between p-4 sm:p-6">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col justify-between p-4 sm:p-6">
       <div className="max-w-6xl w-full mx-auto">
         <Logo to="/" />
       </div>
 
       <div className="w-full max-w-md mx-auto my-8 space-y-4">
-        <div className="p-3 rounded-lg bg-[#111114] border border-[#22D3EE]/30 flex items-start gap-2.5 text-xs text-[#A1A1AA]">
-          <Info className="w-4 h-4 text-[#22D3EE] shrink-0 mt-0.5" />
+        <div className="p-3 rounded-lg bg-[var(--surface)] border border-[var(--accent-study)]/30 flex items-start gap-2.5 text-xs text-[var(--text-secondary)]">
+          <Info className="w-4 h-4 text-[var(--accent-study)] shrink-0 mt-0.5" />
           <span>
-            <strong className="text-[#F4F4F5]">Frontend Demo State:</strong>{' '}
+            <strong className="text-[var(--text-primary)]">Frontend Demo State:</strong>{' '}
             Authentication is simulated locally in your browser via{' '}
-            <code className="text-[#22D3EE]">localStorage</code>. No backend is
+            <code className="text-[var(--accent-study)]">localStorage</code>. No backend is
             connected yet.
           </span>
         </div>
 
         <Card className="p-6 space-y-5">
           <div>
-            <h1 className="text-xl font-semibold text-[#F4F4F5]">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
               {copy.heading}
             </h1>
-            <p className="text-xs text-[#A1A1AA] mt-1">{copy.sub}</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">{copy.sub}</p>
           </div>
 
           {resetSent ? (
             <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
+              <div className="flex items-center gap-2 text-sm font-medium text-[var(--success)]">
                 <CheckCircle2 className="w-4 h-4" />
                 Demo reset instructions prepared
               </div>
-              <p className="text-xs text-[#D4D4D8]">
+              <p className="text-xs text-[var(--text-secondary)]">
                 In production, a reset email would be sent to{' '}
-                <span className="font-mono text-[#F4F4F5]">{email}</span>.
+                <span className="font-mono text-[var(--text-primary)]">{email}</span>.
               </p>
               <Link
                 to="/login"
-                className="inline-block text-xs font-medium text-[#22D3EE] hover:underline pt-1"
+                className="inline-block text-xs font-medium text-[var(--accent-study)] hover:underline pt-1"
               >
                 Return to Sign In
               </Link>
@@ -143,7 +143,7 @@ export function AuthPage({ mode = 'login' }) {
                 <div className="flex justify-end">
                   <Link
                     to="/forgot-password"
-                    className="text-xs text-[#A1A1AA] hover:text-[#22D3EE]"
+                    className="text-xs text-[var(--text-secondary)] hover:text-[var(--accent-study)]"
                   >
                     Forgot password?
                   </Link>
@@ -157,11 +157,11 @@ export function AuthPage({ mode = 'login' }) {
             </form>
           )}
 
-          <div className="pt-3 border-t border-[#27272F] text-center text-xs text-[#A1A1AA]">
+          <div className="pt-3 border-t border-[var(--border)] text-center text-xs text-[var(--text-secondary)]">
             {mode === 'login' && (
               <>
                 New to EchoSpace?{' '}
-                <Link to="/register" className="text-[#F4F4F5] hover:text-[#22D3EE] font-medium">
+                <Link to="/register" className="text-[var(--text-primary)] hover:text-[var(--accent-study)] font-medium">
                   Create an account
                 </Link>
               </>
@@ -169,13 +169,13 @@ export function AuthPage({ mode = 'login' }) {
             {mode === 'register' && (
               <>
                 Already have an account?{' '}
-                <Link to="/login" className="text-[#F4F4F5] hover:text-[#22D3EE] font-medium">
+                <Link to="/login" className="text-[var(--text-primary)] hover:text-[var(--accent-study)] font-medium">
                   Sign in
                 </Link>
               </>
             )}
             {mode === 'forgot' && (
-              <Link to="/login" className="text-[#F4F4F5] hover:text-[#22D3EE] font-medium">
+              <Link to="/login" className="text-[var(--text-primary)] hover:text-[var(--accent-study)] font-medium">
                 Back to Sign In
               </Link>
             )}
@@ -183,7 +183,7 @@ export function AuthPage({ mode = 'login' }) {
         </Card>
       </div>
 
-      <div className="text-center text-xs text-[#71717A]">
+      <div className="text-center text-xs text-[var(--text-muted)]">
         EchoSpace · Listen. Understand. Discuss. Create.
       </div>
     </div>

@@ -13,10 +13,10 @@ export function ChapterTimeline({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[#A1A1AA]">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
           Chapters
         </span>
-        <span className="text-[11px] text-[#71717A]">
+        <span className="text-[11px] text-[var(--text-muted)]">
           {chapters.length} sections
         </span>
       </div>
@@ -32,8 +32,8 @@ export function ChapterTimeline({
               key={ch.id}
               className={`group relative rounded-lg border transition-colors ${
                 isCurrent
-                  ? 'bg-[#18181D] border-[#8B5CF6]/50 text-[#F4F4F5]'
-                  : 'bg-[#09090B] border-[#27272F] text-[#A1A1AA] hover:border-[#3F3F46] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--bg-secondary)] border-[var(--accent-creator)]/50 text-[var(--text-primary)]'
+                  : 'bg-[var(--bg-primary)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)] hover:text-[var(--text-primary)]'
               }`}
             >
               <button
@@ -41,7 +41,7 @@ export function ChapterTimeline({
                 onClick={() => onSelectChapter?.(ch.startTime)}
                 className="w-full text-left px-3 py-2 pr-7 cursor-pointer"
               >
-                <span className="block font-mono text-[10px] text-[#22D3EE]">
+                <span className="block font-mono text-[10px] text-[var(--accent-study)]">
                   {formatTime(ch.startTime)}
                 </span>
                 <span className="block text-xs font-medium truncate mt-0.5">
@@ -56,7 +56,7 @@ export function ChapterTimeline({
                       onDeleteChapter(ch.id)
                     }
                   }}
-                  className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 p-1 text-[#71717A] hover:text-rose-400 transition-opacity cursor-pointer"
+                  className="opacity-0 group-hover:opacity-100 absolute top-2 right-2 p-1 text-[var(--text-muted)] hover:text-[var(--danger)] transition-opacity cursor-pointer"
                   title="Delete chapter"
                 >
                   <Trash2 className="w-3 h-3" />

@@ -11,11 +11,16 @@ export function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const redirectTarget = searchParams.get('redirect')
+  const sessionExpired = searchParams.get('expired') === '1'
   const loginWithBackend = useEchoStore((s) => s.loginWithBackend)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
-  const [apiError, setApiError] = useState('')
+  const [apiError, setApiError] = useState(
+    sessionExpired
+      ? 'Your session expired or could not be verified. Please sign in to continue.'
+      : ''
+  )
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
@@ -47,7 +52,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
           <Logo to="/" />
@@ -55,16 +60,16 @@ export function LoginPage() {
 
         <Card className="p-6 space-y-5">
           <div className="space-y-1">
-            <h1 className="text-xl font-semibold text-[#F4F4F5]">
+            <h1 className="text-xl font-semibold text-[var(--text-primary)]">
               Sign in to EchoSpace
             </h1>
-            <p className="text-xs text-[#A1A1AA]">
+            <p className="text-xs text-[var(--text-secondary)]">
               Access your Study and Creator audio workspaces.
             </p>
           </div>
 
           {apiError && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-[var(--danger)]">
               {apiError}
             </div>
           )}
@@ -95,7 +100,7 @@ export function LoginPage() {
             <div className="flex items-center justify-end">
               <Link
                 to="/forgot-password"
-                className="text-xs text-[#A78BFA] hover:underline"
+                className="text-xs text-[var(--accent-creator)] hover:underline"
               >
                 Forgot password?
               </Link>
@@ -108,7 +113,7 @@ export function LoginPage() {
           </form>
         </Card>
 
-        <p className="text-center text-xs text-[#A1A1AA]">
+        <p className="text-center text-xs text-[var(--text-secondary)]">
           New to EchoSpace?{' '}
           <Link
             to={
@@ -116,7 +121,7 @@ export function LoginPage() {
                 ? `/register?redirect=${encodeURIComponent(redirectTarget)}`
                 : '/register'
             }
-            className="text-[#F4F4F5] hover:underline font-medium"
+            className="text-[var(--text-primary)] hover:underline font-medium"
           >
             Create an account
           </Link>

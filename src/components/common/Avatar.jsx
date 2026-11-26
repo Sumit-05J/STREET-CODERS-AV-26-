@@ -1,7 +1,7 @@
 import React from 'react'
 import { getInitials } from '../../utils/time'
 
-export function Avatar({ name, color = '#8B5CF6', size = 'md' }) {
+export function Avatar({ name, color = '#D9532F', size = 'md' }) {
   const sizes = {
     xs: 'w-5 h-5 text-[10px]',
     sm: 'w-6 h-6 text-[10px]',

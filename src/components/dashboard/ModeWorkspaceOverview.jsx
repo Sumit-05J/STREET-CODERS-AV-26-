@@ -81,26 +81,26 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
         <div>
           <div className="flex items-center gap-2">
             <Badge tone={isStudy ? 'cyan' : 'primary'}>{cfg.name}</Badge>
-            <span className="text-xs text-[#71717A]">{cfg.tagline}</span>
+            <span className="text-xs text-[var(--text-muted)]">{cfg.tagline}</span>
           </div>
-          <h1 className="text-2xl font-semibold text-[#F4F4F5] tracking-tight mt-2">
+          <h1 className="font-display text-3xl font-semibold text-[var(--text-primary)] tracking-tight mt-2">
             {titleOverride || `Welcome back, ${user.name.split(' ')[0]}`}
           </h1>
-          <p className="text-sm text-[#A1A1AA] mt-0.5">
+          <p className="text-sm text-[var(--text-secondary)] mt-0.5">
             {subtitleOverride || cfg.description}
           </p>
         </div>
 
         {/* Workspace Switcher & Quick Actions */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex bg-[#111114] border border-[#27272F] rounded-lg p-0.5">
+          <div className="inline-flex bg-[var(--surface)] border border-[var(--border)] rounded-lg p-0.5">
             <button
               type="button"
               onClick={() => handleModeSwitch('study')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 activeMode === 'study'
-                  ? 'bg-[#22D3EE]/15 text-[#22D3EE]'
-                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--accent-study)]/15 text-[var(--accent-study)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               Study Mode
@@ -110,8 +110,8 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
               onClick={() => handleModeSwitch('creator')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 activeMode === 'creator'
-                  ? 'bg-[#8B5CF6]/15 text-[#A78BFA]'
-                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--accent-creator)]/15 text-[var(--accent-creator)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               Creator Mode
@@ -156,12 +156,12 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
       {workspaces.length > 0 && (
         <section className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-[#F4F4F5]">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">
               My Workspaces ({workspaces.length})
             </h2>
             <Link
               to="/app/members"
-              className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5] inline-flex items-center gap-1"
+              className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1"
             >
               Manage members &amp; invites <ArrowRight className="w-3 h-3" />
             </Link>
@@ -176,7 +176,7 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                   navigate(ws.mode === 'STUDY' ? '/app/study' : '/app/creator')
                 }}
                 className={`p-3.5 cursor-pointer flex items-center justify-between gap-3 ${
-                  ws.id === activeWorkspaceId ? 'border-[#8B5CF6]/60 bg-[#141418]' : ''
+                  ws.id === activeWorkspaceId ? 'border-[var(--accent-creator)]/60 bg-[#141418]' : ''
                 }`}
               >
                 <div className="min-w-0">
@@ -186,11 +186,11 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                     </Badge>
                     <Badge tone="neutral">{ws.myRole}</Badge>
                   </div>
-                  <p className="text-sm font-medium text-[#F4F4F5] truncate mt-1.5">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate mt-1.5">
                     {ws.name}
                   </p>
                 </div>
-                <span className="text-[11px] text-[#71717A] inline-flex items-center gap-1 shrink-0">
+                <span className="text-[11px] text-[var(--text-muted)] inline-flex items-center gap-1 shrink-0">
                   <Users className="w-3 h-3" />
                   {ws._count?.members ?? 1}
                 </span>
@@ -203,26 +203,26 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
       {/* Stats Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="p-4">
-          <p className="text-xs text-[#A1A1AA]">{cfg.recordingPlural}</p>
-          <p className="text-2xl font-semibold text-[#F4F4F5] mt-1">
+          <p className="text-xs text-[var(--text-secondary)]">{cfg.recordingPlural}</p>
+          <p className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
             {modeRecordings.length}
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-[#A1A1AA]">{sectionTitle('openItems')}</p>
-          <p className="text-2xl font-semibold text-[#F4F4F5] mt-1">
+          <p className="text-xs text-[var(--text-secondary)]">{sectionTitle('openItems')}</p>
+          <p className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
             {openAnnotations.length}
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-[#A1A1AA]">{sectionTitle('highlights')}</p>
-          <p className="text-2xl font-semibold text-[#F4F4F5] mt-1">
+          <p className="text-xs text-[var(--text-secondary)]">{sectionTitle('highlights')}</p>
+          <p className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
             {modeClips.length}
           </p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-[#A1A1AA]">{cfg.collectionPlural}</p>
-          <p className="text-2xl font-semibold text-[#F4F4F5] mt-1">
+          <p className="text-xs text-[var(--text-secondary)]">{cfg.collectionPlural}</p>
+          <p className="text-2xl font-semibold text-[var(--text-primary)] mt-1">
             {modePlaylists.length}
           </p>
         </Card>
@@ -235,12 +235,12 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           {/* Recent Recordings */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[#F4F4F5]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 {sectionTitle('recentRecordings')}
               </h2>
               <Link
                 to="/app/recordings"
-                className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5] inline-flex items-center gap-1"
+                className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1"
               >
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
@@ -262,17 +262,17 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                       <div
                         className={`w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 ${
                           isStudy
-                            ? 'bg-[#22D3EE]/10 border-[#22D3EE]/30 text-[#22D3EE]'
-                            : 'bg-[#8B5CF6]/10 border-[#8B5CF6]/30 text-[#A78BFA]'
+                            ? 'bg-[var(--accent-study)]/10 border-[var(--accent-study)]/30 text-[var(--accent-study)]'
+                            : 'bg-[var(--accent-creator)]/10 border-[var(--accent-creator)]/30 text-[var(--accent-creator)]'
                         }`}
                       >
                         <Play className="w-4 h-4 fill-current ml-0.5" />
                       </div>
                       <div className="min-w-0">
-                        <h3 className="text-sm font-medium text-[#F4F4F5] truncate">
+                        <h3 className="text-sm font-medium text-[var(--text-primary)] truncate">
                           {rec.title}
                         </h3>
-                        <p className="text-xs text-[#A1A1AA] truncate mt-0.5">
+                        <p className="text-xs text-[var(--text-secondary)] truncate mt-0.5">
                           {rec.authorName} · {rec.createdAt} ·{' '}
                           <span className="font-mono">{formatTime(rec.duration)}</span>
                         </p>
@@ -280,11 +280,11 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[#A1A1AA] bg-[#09090B] border border-[#27272F] px-2 py-1 rounded-md">
+                      <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] border border-[var(--border)] px-2 py-1 rounded-md">
                         <MessageSquareText className="w-3 h-3" />
                         {recAnnCount}
                       </span>
-                      <ArrowRight className="w-4 h-4 text-[#71717A]" />
+                      <ArrowRight className="w-4 h-4 text-[var(--text-muted)]" />
                     </div>
                   </Card>
                 )
@@ -295,12 +295,12 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           {/* Unresolved Questions / Pending Feedback */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[#F4F4F5]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 {sectionTitle('openItems')}
               </h2>
               <Link
                 to="/app/discussions"
-                className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5] inline-flex items-center gap-1"
+                className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1"
               >
                 All discussions <ArrowRight className="w-3 h-3" />
               </Link>
@@ -324,7 +324,7 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                         >
                           {cat.label}
                         </span>
-                        <span className="font-mono text-[11px] text-[#A1A1AA]">
+                        <span className="font-mono text-[11px] text-[var(--text-secondary)]">
                           {formatTime(ann.timestamp)}
                         </span>
                       </div>
@@ -334,14 +334,14 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                         {statusMeta.label}
                       </span>
                     </div>
-                    <p className="text-xs text-[#E4E4E7] line-clamp-2">
+                    <p className="text-xs text-[var(--text-primary)] line-clamp-2">
                       {ann.content}
                     </p>
                   </Card>
                 )
               })}
               {openAnnotations.length === 0 && (
-                <Card className="p-4 text-xs text-[#A1A1AA]">
+                <Card className="p-4 text-xs text-[var(--text-secondary)]">
                   All caught up — no open items right now.
                 </Card>
               )}
@@ -351,12 +351,12 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           {/* Recent Clips */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[#F4F4F5]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 {sectionTitle('highlights')}
               </h2>
               <Link
                 to="/app/highlights"
-                className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5] inline-flex items-center gap-1"
+                className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1"
               >
                 All clips <ArrowRight className="w-3 h-3" />
               </Link>
@@ -377,12 +377,12 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
         <div className="space-y-6">
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-[#F4F4F5]">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                 {sectionTitle('collections')}
               </h2>
               <Link
                 to="/app/playlists"
-                className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5] inline-flex items-center gap-1"
+                className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1"
               >
                 Manage <ArrowRight className="w-3 h-3" />
               </Link>
@@ -399,22 +399,22 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-[#F4F4F5]">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)]">
               {sectionTitle('activity')}
             </h2>
-            <Card className="p-4 divide-y divide-[#27272F]">
+            <Card className="p-4 divide-y divide-[var(--border)]">
               {modeActivity.map((act) => (
                 <div key={act.id} className="py-2.5 first:pt-0 last:pb-0">
-                  <p className="text-xs text-[#E4E4E7]">
-                    <span className="font-medium text-[#F4F4F5]">
+                  <p className="text-xs text-[var(--text-primary)]">
+                    <span className="font-medium text-[var(--text-primary)]">
                       {act.actor}
                     </span>{' '}
-                    <span className="text-[#A1A1AA]">{act.action}</span>{' '}
-                    <span className="font-medium text-[#F4F4F5]">
+                    <span className="text-[var(--text-secondary)]">{act.action}</span>{' '}
+                    <span className="font-medium text-[var(--text-primary)]">
                       {act.target}
                     </span>
                   </p>
-                  <p className="text-[11px] text-[#71717A] mt-0.5 inline-flex items-center gap-1">
+                  <p className="text-[11px] text-[var(--text-muted)] mt-0.5 inline-flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {act.time}
                   </p>
@@ -424,11 +424,11 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           </section>
 
           <Card elevated className="p-4 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-medium text-[#F4F4F5]">
-              <Sparkles className="w-4 h-4 text-[#22D3EE]" />
+            <div className="flex items-center gap-2 text-xs font-medium text-[var(--text-primary)]">
+              <Sparkles className="w-4 h-4 text-[var(--accent-study)]" />
               Quick Tip
             </div>
-            <p className="text-xs text-[#A1A1AA] leading-relaxed">
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               Open any {cfg.recordingNoun.toLowerCase()} to drop timestamped{' '}
               {cfg.annotationCategories.map((c) => c.label.toLowerCase()).join(', ')}{' '}
               markers directly on the interactive waveform.
@@ -470,7 +470,7 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           }}
           className="space-y-4"
         >
-          <div className="grid grid-cols-2 gap-1 bg-[#09090B] p-1 rounded-lg border border-[#27272F]">
+          <div className="grid grid-cols-2 gap-1 bg-[var(--bg-primary)] p-1 rounded-lg border border-[var(--border)]">
             {['study', 'creator'].map((m) => (
               <button
                 key={m}
@@ -478,8 +478,8 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
                 onClick={() => setWsMode(m)}
                 className={`py-1.5 text-xs font-medium rounded-md capitalize cursor-pointer ${
                   wsMode === m
-                    ? 'bg-[#18181D] text-[#F4F4F5]'
-                    : 'text-[#A1A1AA]'
+                    ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+                    : 'text-[var(--text-secondary)]'
                 }`}
               >
                 {m} Mode
@@ -498,7 +498,7 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
             value={wsDesc}
             onChange={(e) => setWsDesc(e.target.value)}
           />
-          {wsError && <p className="text-xs text-rose-400">{wsError}</p>}
+          {wsError && <p className="text-xs text-[var(--danger)]">{wsError}</p>}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setCreateWsOpen(false)}>
               Cancel
@@ -553,7 +553,7 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value)}
           />
-          {wsError && <p className="text-xs text-rose-400">{wsError}</p>}
+          {wsError && <p className="text-xs text-[var(--danger)]">{wsError}</p>}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setJoinWsOpen(false)}>
               Cancel

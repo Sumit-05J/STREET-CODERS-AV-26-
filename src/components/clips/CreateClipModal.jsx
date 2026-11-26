@@ -109,7 +109,7 @@ export function CreateClipModal({
           onChange={(e) => setNotes(e.target.value)}
         />
 
-        {error && <p className="text-xs text-rose-400">{error}</p>}
+        {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
 
         <div className="flex items-center justify-end gap-2 pt-2">
           <Button variant="ghost" onClick={onClose}>

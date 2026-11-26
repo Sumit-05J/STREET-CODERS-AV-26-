@@ -36,12 +36,14 @@ export function AnnotationCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`rounded-lg border p-3.5 transition-colors ${
+      className={`rounded-lg border p-3.5 transition-all ${
         onSeek ? 'cursor-pointer' : ''
       } ${
         isActive
-          ? 'bg-[#18181D] border-[#8B5CF6]/50'
-          : 'bg-[#111114] border-[#27272F] hover:border-[#3F3F46]'
+          ? mode === 'study'
+            ? 'bg-[var(--accent-study)]/6 border-[var(--accent-study)] shadow-[0_2px_10px_rgba(63,106,88,0.08)]'
+            : 'bg-[var(--accent-creator)]/6 border-[var(--accent-creator)] shadow-[0_2px_10px_rgba(217,83,47,0.08)]'
+          : 'bg-[var(--surface)] border-[var(--border)] hover:border-[var(--border-strong)]'
       }`}
     >
       {/* Header */}
@@ -49,20 +51,20 @@ export function AnnotationCard({
         <div className="flex items-center gap-2 min-w-0">
           <Avatar name={annotation.authorName} size="sm" />
           <div className="min-w-0">
-            <p className="text-xs font-medium text-[#F4F4F5] truncate">
+            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">
               {annotation.authorName}
             </p>
-            <p className="text-[11px] text-[#71717A]">{annotation.createdAt}</p>
+            <p className="text-[11px] text-[var(--text-muted)]">{annotation.createdAt}</p>
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => onSeek?.(annotation)}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#09090B] border border-[#27272F] hover:border-[#3F3F46] font-mono text-[11px] text-[#F4F4F5] shrink-0 cursor-pointer"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border)] hover:border-[#181816] font-mono text-[11px] text-[var(--text-primary)] shrink-0 cursor-pointer"
           title="Jump to timestamp"
         >
-          <Clock className="w-3 h-3 text-[#A1A1AA]" />
+          <Clock className="w-3 h-3 text-[var(--text-secondary)]" />
           {formatTime(annotation.timestamp)}
         </button>
       </div>
@@ -80,11 +82,11 @@ export function AnnotationCard({
           <select
             value={annotation.status}
             onChange={(e) => onStatusChange(annotation.id, e.target.value)}
-            className={`px-2 py-0.5 rounded border text-[11px] font-medium bg-[#09090B] focus:outline-none cursor-pointer ${statusMeta.badgeClass}`}
+            className={`px-2 py-0.5 rounded border text-[11px] font-medium bg-[var(--surface)] focus:outline-none cursor-pointer ${statusMeta.badgeClass}`}
             aria-label="Annotation status"
           >
             {Object.entries(cfg.statusLabels).map(([key, meta]) => (
-              <option key={key} value={key} className="bg-[#111114] text-[#F4F4F5]">
+              <option key={key} value={key} className="bg-[var(--surface)] text-[var(--text-primary)]">
                 {meta.label}
               </option>
             ))}
@@ -113,7 +115,7 @@ export function AnnotationCard({
             rows={2}
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
-            className="w-full px-2.5 py-1.5 rounded bg-[#09090B] border border-[#27272F] text-xs text-[#F4F4F5] focus:outline-none focus:border-[#8B5CF6]"
+            className="w-full px-2.5 py-1.5 rounded bg-[var(--bg-primary)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-creator)]"
           />
           <div className="flex items-center justify-end gap-1.5">
             <button
@@ -122,20 +124,20 @@ export function AnnotationCard({
                 setEditText(annotation.content)
                 setEditing(false)
               }}
-              className="px-2 py-1 text-[11px] text-[#A1A1AA] hover:text-[#F4F4F5] cursor-pointer"
+              className="px-2 py-1 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-2.5 py-1 rounded bg-[#8B5CF6] text-white text-[11px] font-medium cursor-pointer"
+              className="px-2.5 py-1 rounded bg-[var(--accent-creator)] text-white text-[11px] font-medium cursor-pointer"
             >
               Save
             </button>
           </div>
         </form>
       ) : (
-        <p className="text-sm text-[#E4E4E7] mt-2.5 leading-relaxed">
+        <p className="text-sm text-[var(--text-primary)] mt-2.5 leading-relaxed">
           {annotation.content}
         </p>
       )}
@@ -145,14 +147,14 @@ export function AnnotationCard({
         <button
           type="button"
           onClick={() => setExpanded((prev) => !prev)}
-          className="inline-flex items-center gap-1.5 text-xs text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
         >
           <MessageSquare className="w-3.5 h-3.5" />
           <span>
             {annotation.replies.length}{' '}
             {annotation.replies.length === 1 ? 'reply' : 'replies'}
           </span>
-          <span className="text-[#71717A]">· {expanded ? 'Hide' : 'Discuss'}</span>
+          <span className="text-[var(--text-muted)]">· {expanded ? 'Hide' : 'Discuss'}</span>
         </button>
 
         {canModify && (onEdit || onDelete) && (
@@ -164,7 +166,7 @@ export function AnnotationCard({
                   setEditText(annotation.content)
                   setEditing((p) => !p)
                 }}
-                className="p-1 rounded text-[#71717A] hover:text-[#F4F4F5] hover:bg-[#18181D] cursor-pointer"
+                className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] cursor-pointer"
                 title="Edit annotation"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -178,7 +180,7 @@ export function AnnotationCard({
                     onDelete(annotation.id)
                   }
                 }}
-                className="p-1 rounded text-[#71717A] hover:text-rose-400 hover:bg-[#18181D] cursor-pointer"
+                className="p-1 rounded text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--bg-secondary)] cursor-pointer"
                 title="Delete annotation"
               >
                 <Trash2 className="w-3.5 h-3.5" />

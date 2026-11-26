@@ -17,20 +17,20 @@ export function WorkspaceSelectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] flex flex-col justify-between p-4 sm:p-6">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col justify-between p-4 sm:p-6">
       <div className="max-w-5xl w-full mx-auto flex items-center justify-between">
         <Logo to="/" />
-        <span className="text-xs text-[#A1A1AA]">
+        <span className="text-xs text-[var(--text-secondary)]">
           Select a collaborative mode
         </span>
       </div>
 
       <div className="max-w-4xl w-full mx-auto my-12 space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F4F4F5]">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
             Choose your EchoSpace workspace
           </h1>
-          <p className="text-sm text-[#A1A1AA]">
+          <p className="text-sm text-[var(--text-secondary)]">
             Both modes share the same waveform, annotation, and clip engine —
             tailored to your workflow.
           </p>
@@ -63,7 +63,7 @@ export function WorkspaceSelectPage() {
         </div>
       </div>
 
-      <div className="text-center text-xs text-[#71717A]">
+      <div className="text-center text-xs text-[var(--text-muted)]">
         You can switch between Study and Creator modes anytime from the sidebar.
       </div>
     </div>

@@ -240,7 +240,7 @@ export function AudioWorkspacePage() {
 
   if (loadingEpisode && !recording) {
     return (
-      <div className="p-8 text-center text-sm text-[#A1A1AA]">
+      <div className="p-8 text-center text-sm text-[var(--text-secondary)]">
         Loading recording workspace...
       </div>
     )
@@ -249,7 +249,7 @@ export function AudioWorkspacePage() {
   if (loadError && !recording) {
     return (
       <div className="max-w-xl mx-auto p-8 text-center space-y-4">
-        <p className="text-sm text-rose-400">{loadError}</p>
+        <p className="text-sm text-[var(--danger)]">{loadError}</p>
         <Link to="/app/recordings">
           <Button size="sm" variant="secondary">
             Back to Recordings
@@ -262,7 +262,7 @@ export function AudioWorkspacePage() {
   if (!recording) {
     return (
       <div className="max-w-xl mx-auto p-8 text-center space-y-4">
-        <p className="text-sm text-[#A1A1AA]">Recording not found.</p>
+        <p className="text-sm text-[var(--text-secondary)]">Recording not found.</p>
         <Link to="/app/recordings">
           <Button size="sm" variant="secondary">
             Back to Recordings
@@ -370,7 +370,7 @@ export function AudioWorkspacePage() {
         <div className="flex items-center gap-3">
           <Link
             to="/app/recordings"
-            className="inline-flex items-center gap-1.5 text-xs text-[#A1A1AA] hover:text-[#F4F4F5] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             All {cfg.recordingPlural}
@@ -381,11 +381,11 @@ export function AudioWorkspacePage() {
           </Badge>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-[#A1A1AA]">
+        <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
           <span>By {recording.authorName}</span>
           <span>·</span>
           <span className="inline-flex items-center gap-1 font-mono">
-            <Clock className="w-3.5 h-3.5 text-[#22D3EE]" />
+            <Clock className="w-3.5 h-3.5 text-[var(--accent-study)]" />
             {formatTime(duration || recording.duration)}
           </span>
           {(isManager || (user && recording.authorId === user.id)) && (
@@ -404,7 +404,7 @@ export function AudioWorkspacePage() {
                   navigate('/app/recordings')
                 }, 'Failed to delete recording.')
               }
-              className="inline-flex items-center gap-1 px-2 py-1 rounded border border-[#27272F] text-[#A1A1AA] hover:text-rose-400 hover:border-rose-500/40 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2 py-1 rounded border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--danger)] hover:border-rose-500/40 transition-colors cursor-pointer"
               title="Delete recording"
             >
               <Trash2 className="w-3 h-3" />
@@ -415,20 +415,20 @@ export function AudioWorkspacePage() {
       </div>
 
       {actionError && (
-        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300">
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-[var(--danger)]">
           {actionError}
         </div>
       )}
 
       {clipToast && (
         <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
-          <span className="text-emerald-300">
+          <span className="text-[var(--success)]">
             Highlight clip <strong>{clipToast.title}</strong> saved (
             {formatTime(clipToast.startTime)} – {formatTime(clipToast.endTime)}).
           </span>
           <Link
             to={`/clips/${clipToast.shareToken || clipToast.id}`}
-            className="font-medium text-[#22D3EE] hover:underline shrink-0"
+            className="font-medium text-[var(--accent-study)] hover:underline shrink-0"
           >
             Open Share Page →
           </Link>
@@ -441,17 +441,17 @@ export function AudioWorkspacePage() {
         <div className="xl:col-span-8 space-y-5">
           <Card className="p-5 space-y-3">
             <div className="space-y-1.5">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F4F4F5]">
+              <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[var(--text-primary)]">
                 {recording.title}
               </h1>
               {recording.description && (
-                <p className="text-sm text-[#A1A1AA] leading-relaxed">
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                   {recording.description}
                 </p>
               )}
               {recording.tags?.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <Tag className="w-3.5 h-3.5 text-[#71717A]" />
+                  <Tag className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                   {recording.tags.map((t) => (
                     <Badge key={t}>{t}</Badge>
                   ))}
@@ -522,13 +522,13 @@ export function AudioWorkspacePage() {
             <Card className="p-5 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1 min-w-0">
-                  <p className="text-sm font-medium text-[#F4F4F5]">
+                  <p className="text-sm font-medium text-[var(--text-primary)]">
                     External Media Link
                   </p>
-                  <p className="text-xs text-[#A1A1AA] truncate">
+                  <p className="text-xs text-[var(--text-secondary)] truncate">
                     {recording.sourceUrl}
                   </p>
-                  <p className="text-[11px] text-[#71717A]">
+                  <p className="text-[11px] text-[var(--text-muted)]">
                     This link points to an external webpage rather than a direct
                     audio stream. Open the original source to listen, and record
                     timestamped notes below.
@@ -539,7 +539,7 @@ export function AudioWorkspacePage() {
                     href={recording.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-lg bg-[#18181D] border border-[#27272F] text-xs font-medium text-[#22D3EE] hover:border-[#22D3EE]/40"
+                    className="inline-flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] text-xs font-medium text-[var(--accent-study)] hover:border-[var(--accent-study)]/40"
                   >
                     Open Source Media
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -548,7 +548,7 @@ export function AudioWorkspacePage() {
               </div>
 
               {getOfficialEmbedUrl(recording.sourceUrl) && (
-                <div className="aspect-video w-full overflow-hidden rounded-lg border border-[#27272F] bg-black">
+                <div className="aspect-video w-full overflow-hidden rounded-lg border border-[var(--border)] bg-black">
                   <iframe
                     src={getOfficialEmbedUrl(recording.sourceUrl)}
                     title={recording.title}
@@ -560,7 +560,7 @@ export function AudioWorkspacePage() {
               )}
 
               {canWrite && (
-                <div className="pt-3 border-t border-[#27272F] flex flex-wrap items-center gap-2">
+                <div className="pt-3 border-t border-[var(--border)] flex flex-wrap items-center gap-2">
                   <Button
                     size="sm"
                     variant={mode === 'study' ? 'cyan' : 'primary'}
@@ -585,7 +585,7 @@ export function AudioWorkspacePage() {
           {/* Chapters Card */}
           <Card className="p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#A1A1AA]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
                 Chapter Timeline
               </span>
               {canWrite && (
@@ -613,7 +613,7 @@ export function AudioWorkspacePage() {
                     setChapterError('')
                   }}
                   placeholder="Chapter title at current timestamp..."
-                  className="flex-1 h-9 px-3 rounded-lg bg-[#09090B] border border-[#27272F] text-sm text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-[#8B5CF6]"
+                  className="flex-1 h-9 px-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-creator)]"
                 />
                 <Button type="submit" size="sm">
                   Save Chapter
@@ -621,7 +621,7 @@ export function AudioWorkspacePage() {
               </form>
             )}
             {chapterError && (
-              <p className="text-xs text-rose-400">{chapterError}</p>
+              <p className="text-xs text-[var(--danger)]">{chapterError}</p>
             )}
 
             {recording.chapters?.length > 0 ? (
@@ -640,7 +640,7 @@ export function AudioWorkspacePage() {
                 }
               />
             ) : (
-              <p className="text-xs text-[#71717A]">
+              <p className="text-xs text-[var(--text-muted)]">
                 No chapters added yet. Seek to a moment and click Add Chapter.
               </p>
             )}
@@ -649,8 +649,8 @@ export function AudioWorkspacePage() {
           {/* Bookmarks Card */}
           <Card className="p-5 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#A1A1AA] inline-flex items-center gap-1.5">
-                <Bookmark className="w-3.5 h-3.5 text-[#22D3EE]" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] inline-flex items-center gap-1.5">
+                <Bookmark className="w-3.5 h-3.5 text-[var(--accent-study)]" />
                 Bookmarks ({bookmarks.length})
               </span>
               {canWrite && (
@@ -675,7 +675,7 @@ export function AudioWorkspacePage() {
                     value={bookmarkLabel}
                     onChange={(e) => setBookmarkLabel(e.target.value)}
                     placeholder="Optional label..."
-                    className="h-8 px-2.5 rounded-lg bg-[#09090B] border border-[#27272F] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-[#22D3EE]"
+                    className="h-8 px-2.5 rounded-lg bg-[var(--bg-primary)] border border-[var(--border)] text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-study)]"
                   />
                   <Button type="submit" size="sm" variant="secondary">
                     <Bookmark className="w-3.5 h-3.5" />
@@ -690,14 +690,14 @@ export function AudioWorkspacePage() {
                 {bookmarks.map((bm) => (
                   <div
                     key={bm.id}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#09090B] border border-[#27272F] text-xs"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--bg-primary)] border border-[var(--border)] text-xs"
                   >
                     <button
                       type="button"
                       onClick={() => seekTo(bm.timestamp, true)}
-                      className="inline-flex items-center gap-1.5 text-[#E4E4E7] hover:text-[#22D3EE] cursor-pointer"
+                      className="inline-flex items-center gap-1.5 text-[var(--text-primary)] hover:text-[var(--accent-study)] cursor-pointer"
                     >
-                      <span className="font-mono text-[#22D3EE]">
+                      <span className="font-mono text-[var(--accent-study)]">
                         {formatTime(bm.timestamp)}
                       </span>
                       {bm.label && <span>{bm.label}</span>}
@@ -710,7 +710,7 @@ export function AudioWorkspacePage() {
                           setBookmarks((prev) => prev.filter((x) => x.id !== bm.id))
                         }, 'Failed to delete bookmark.')
                       }
-                      className="text-[#71717A] hover:text-rose-400 cursor-pointer"
+                      className="text-[var(--text-muted)] hover:text-[var(--danger)] cursor-pointer"
                       title="Remove bookmark"
                     >
                       ×
@@ -719,7 +719,7 @@ export function AudioWorkspacePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#71717A]">
+              <p className="text-xs text-[var(--text-muted)]">
                 Save personal timestamp bookmarks to quickly revisit key moments.
               </p>
             )}
@@ -729,10 +729,10 @@ export function AudioWorkspacePage() {
           <Card className="p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-[#F4F4F5]">
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                   Highlight Clips ({recordingClips.length})
                 </h2>
-                <p className="text-[11px] text-[#71717A]">
+                <p className="text-[11px] text-[var(--text-muted)]">
                   Play exact intervals or share public clip links
                 </p>
               </div>
@@ -772,7 +772,7 @@ export function AudioWorkspacePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#71717A]">
+              <p className="text-xs text-[var(--text-muted)]">
                 No highlight clips saved for this recording yet.
               </p>
             )}
@@ -784,10 +784,10 @@ export function AudioWorkspacePage() {
           <Card className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-semibold text-[#F4F4F5]">
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">
                   {mode === 'study' ? 'Study Notes & Doubts' : 'Review Notes'}
                 </h2>
-                <p className="text-[11px] text-[#71717A]">
+                <p className="text-[11px] text-[var(--text-muted)]">
                   Click any timestamp to jump in the waveform
                 </p>
               </div>
@@ -811,8 +811,8 @@ export function AudioWorkspacePage() {
                   onClick={() => setCategoryFilter(f)}
                   className={`px-2.5 py-1 rounded-md border text-[11px] font-medium transition-colors cursor-pointer ${
                     categoryFilter === f
-                      ? 'bg-[#18181D] border-[#8B5CF6]/50 text-[#F4F4F5]'
-                      : 'bg-[#09090B] border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5]'
+                      ? 'bg-[var(--bg-secondary)] border-[var(--accent-creator)]/50 text-[var(--text-primary)]'
+                      : 'bg-[var(--bg-primary)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {f}
@@ -833,7 +833,7 @@ export function AudioWorkspacePage() {
             {/* Annotation Thread List */}
             <div className="space-y-3 max-h-[540px] overflow-y-auto pr-1">
               {recordingAnnotations.length === 0 ? (
-                <div className="py-8 text-center text-xs text-[#71717A]">
+                <div className="py-8 text-center text-xs text-[var(--text-muted)]">
                   {cfg.emptyStateText}
                 </div>
               ) : (

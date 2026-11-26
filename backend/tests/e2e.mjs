@@ -581,7 +581,26 @@ async function run() {
   assert.equal(mp4Res.status, 202)
   assert.equal(mp4Res.data.job.sourceKind, 'VIDEO_UPLOAD')
 
-  console.log('\nALL 17 END-TO-END WORKFLOW CHECKS PASSED!')
+  // 18. Test short-lived single-use extension -> web app handoff
+  console.log('18. Testing short-lived single-use Auth Handoff...')
+  const handoffCreate = await api('POST', '/auth/handoff', { token: token1 })
+  assert.equal(handoffCreate.status, 201)
+  assert.ok(handoffCreate.data.code)
+
+  const handoffExchange = await api('POST', '/auth/handoff/exchange', {
+    body: { code: handoffCreate.data.code },
+  })
+  assert.equal(handoffExchange.status, 200)
+  assert.ok(handoffExchange.data.token)
+  assert.equal(handoffExchange.data.user.email, u1Email)
+
+  // Single-use check: reusing same code must fail with 401
+  const handoffReuse = await api('POST', '/auth/handoff/exchange', {
+    body: { code: handoffCreate.data.code },
+  })
+  assert.equal(handoffReuse.status, 401)
+
+  console.log('\nALL 18 END-TO-END WORKFLOW CHECKS PASSED!')
 }
 
 run().catch((err) => {

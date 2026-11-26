@@ -20,7 +20,7 @@ export function ReplyThread({
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-[#27272F]/80 space-y-2.5">
+    <div className="mt-3 pt-3 border-t border-[var(--border)]/80 space-y-2.5">
       {replies.map((rep) => {
         const canDelete =
           onDeleteReply &&
@@ -32,10 +32,10 @@ export function ReplyThread({
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-[#F4F4F5]">
+                  <span className="font-medium text-[var(--text-primary)]">
                     {rep.authorName}
                   </span>
-                  <span className="text-[11px] text-[#71717A]">
+                  <span className="text-[11px] text-[var(--text-muted)]">
                     {rep.createdAt}
                   </span>
                 </div>
@@ -47,14 +47,14 @@ export function ReplyThread({
                         onDeleteReply(rep.id)
                       }
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-[#71717A] hover:text-rose-400 transition-opacity cursor-pointer"
+                    className="opacity-0 group-hover:opacity-100 p-0.5 text-[var(--text-muted)] hover:text-[var(--danger)] transition-opacity cursor-pointer"
                     title="Delete reply"
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
                 )}
               </div>
-              <p className="text-xs text-[#D4D4D8] mt-0.5 leading-relaxed">
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5 leading-relaxed">
                 {rep.content}
               </p>
             </div>
@@ -69,7 +69,7 @@ export function ReplyThread({
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             placeholder="Write a reply..."
-            className="flex-1 h-8 px-2.5 rounded-md bg-[#09090B] border border-[#27272F] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-[#8B5CF6]"
+            className="flex-1 h-8 px-2.5 rounded-md bg-[var(--bg-primary)] border border-[var(--border)] text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-creator)]"
           />
           <Button
             type="submit"

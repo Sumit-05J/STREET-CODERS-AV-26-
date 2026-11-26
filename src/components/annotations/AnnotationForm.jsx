@@ -43,7 +43,7 @@ export function AnnotationForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-lg bg-[#18181D] border border-[#27272F] p-3.5 space-y-3"
+      className="rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] p-3.5 space-y-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -55,7 +55,7 @@ export function AnnotationForm({
               className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer ${
                 category === cat.id
                   ? cat.badgeClass
-                  : 'bg-[#09090B] border-[#27272F] text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  : 'bg-[var(--bg-primary)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               {cat.label}
@@ -63,13 +63,13 @@ export function AnnotationForm({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 bg-[#09090B] border border-[#27272F] rounded-md px-2 py-1">
-          <Clock className="w-3 h-3 text-[#A1A1AA]" />
+        <div className="flex items-center gap-1.5 bg-[var(--bg-primary)] border border-[var(--border)] rounded-md px-2 py-1">
+          <Clock className="w-3 h-3 text-[var(--text-secondary)]" />
           <input
             type="text"
             value={timeInput}
             onChange={(e) => setTimeInput(e.target.value)}
-            className="w-12 bg-transparent font-mono text-xs text-[#F4F4F5] focus:outline-none text-center"
+            className="w-12 bg-transparent font-mono text-xs text-[var(--text-primary)] focus:outline-none text-center"
             aria-label="Timestamp"
           />
         </div>

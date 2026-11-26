@@ -38,14 +38,14 @@ export function Sidebar({ mobileOpen, onClose }) {
   }
 
   const content = (
-    <div className="flex flex-col h-full w-60 bg-[#09090B] border-r border-[#27272F]">
-      <div className="h-14 px-4 flex items-center justify-between border-b border-[#27272F]">
+    <div className="flex flex-col h-full w-60 bg-[var(--bg-secondary)]/65 border-r border-[var(--border)]">
+      <div className="h-14 px-4 flex items-center justify-between border-b border-[var(--border)]">
         <Logo to="/app" size="sm" />
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-md text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#18181D] cursor-pointer"
+            className="lg:hidden p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] cursor-pointer"
             aria-label="Close navigation"
           >
             <X className="w-4 h-4" />
@@ -55,10 +55,10 @@ export function Sidebar({ mobileOpen, onClose }) {
 
       {/* Mode indicator pill */}
       <div className="px-3 pt-4 pb-2">
-        <div className="p-2.5 rounded-lg bg-[#111114] border border-[#27272F]">
+        <div className="p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-wider text-[#A1A1AA] font-medium">
-              Workspace
+            <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-semibold">
+              Experience
             </span>
             <span
               className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${cfg.accentBg} ${cfg.accentText} ${cfg.accentBorder}`}
@@ -66,14 +66,14 @@ export function Sidebar({ mobileOpen, onClose }) {
               {cfg.shortName}
             </span>
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-1 bg-[#09090B] p-0.5 rounded-md border border-[#27272F]">
+          <div className="mt-2 grid grid-cols-2 gap-1 bg-[var(--bg-primary)] p-0.5 rounded-md border border-[var(--border)]">
             <button
               type="button"
               onClick={() => handleSwitchMode('study')}
               className={`py-1 text-xs font-medium rounded transition-colors cursor-pointer ${
                 mode === 'study'
-                  ? 'bg-[#22D3EE]/15 text-[#22D3EE]'
-                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--accent-study)] text-white shadow-xs'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               Study
@@ -83,8 +83,8 @@ export function Sidebar({ mobileOpen, onClose }) {
               onClick={() => handleSwitchMode('creator')}
               className={`py-1 text-xs font-medium rounded transition-colors cursor-pointer ${
                 mode === 'creator'
-                  ? 'bg-[#8B5CF6]/15 text-[#A78BFA]'
-                  : 'text-[#A1A1AA] hover:text-[#F4F4F5]'
+                  ? 'bg-[var(--accent-creator)] text-white shadow-xs'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
               Creator
@@ -104,10 +104,10 @@ export function Sidebar({ mobileOpen, onClose }) {
               end={item.end}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                `flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-[#18181D] text-[#F4F4F5] border border-[#27272F]'
-                    : 'text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#111114] border border-transparent'
+                    ? 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] shadow-[0_1px_2px_rgba(24,24,22,0.04)]'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]/70 border border-transparent'
                 }`
               }
             >
@@ -119,14 +119,14 @@ export function Sidebar({ mobileOpen, onClose }) {
       </nav>
 
       {/* Bottom workspace link */}
-      <div className="p-3 border-t border-[#27272F]">
+      <div className="p-3 border-t border-[var(--border)]">
         <button
           type="button"
           onClick={() => {
             navigate('/workspaces')
             onClose?.()
           }}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-[#A1A1AA] hover:text-[#F4F4F5] hover:bg-[#111114] transition-colors cursor-pointer"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] border border-transparent hover:border-[var(--border)] transition-colors cursor-pointer"
         >
           <span>All Workspaces</span>
           <ArrowLeftRight className="w-3.5 h-3.5" />

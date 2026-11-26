@@ -27,7 +27,7 @@ export function TimelineMarker({
         }`}
         style={{ backgroundColor: cat.color }}
       />
-      <span className="pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-2 px-2 py-1 rounded bg-[#18181D] border border-[#27272F] text-[10px] text-[#F4F4F5] whitespace-nowrap shadow-lg">
+      <span className="pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full mb-2 px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--border)] text-[10px] text-[var(--text-primary)] whitespace-nowrap shadow-lg">
         {formatTime(annotation.timestamp)} · {cat.label}
       </span>
     </button>

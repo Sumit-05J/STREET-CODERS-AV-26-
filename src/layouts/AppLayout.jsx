@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Navbar } from '../components/layout/Navbar'
 import { UploadRecordingModal } from '../components/dashboard/UploadRecordingModal'
@@ -13,11 +13,17 @@ import {
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const handoffCode = searchParams.get('handoff')
+  const [handoffPending, setHandoffPending] = useState(Boolean(handoffCode))
 
   const token = useEchoStore((s) => s.token)
   const isAuthenticated = useEchoStore((s) => s.isAuthenticated)
   const activeWorkspaceId = useEchoStore((s) => s.activeWorkspaceId)
   const loadWorkspaces = useEchoStore((s) => s.loadWorkspaces)
+  const completeHandoff = useEchoStore((s) => s.completeHandoff)
   const loadNotifications = useEchoStore((s) => s.loadNotifications)
   const addSocketNotification = useEchoStore((s) => s.addSocketNotification)
   const applySocketMemberJoined = useEchoStore((s) => s.applySocketMemberJoined)
@@ -25,6 +31,38 @@ export function AppLayout() {
   const applySocketAnnotationCreated = useEchoStore(
     (s) => s.applySocketAnnotationCreated
   )
+
+  useEffect(() => {
+    if (!handoffCode) {
+      setHandoffPending(false)
+      return
+    }
+    let active = true
+    setHandoffPending(true)
+    completeHandoff(handoffCode)
+      .then(() => {
+        if (!active) return
+        const nextParams = new URLSearchParams(searchParams)
+        nextParams.delete('handoff')
+        setSearchParams(nextParams, { replace: true })
+        setHandoffPending(false)
+      })
+      .catch(() => {
+        if (!active) return
+        const nextParams = new URLSearchParams(searchParams)
+        nextParams.delete('handoff')
+        const qs = nextParams.toString()
+        const cleanDest = `${location.pathname}${qs ? `?${qs}` : ''}`
+        setHandoffPending(false)
+        navigate(
+          `/login?redirect=${encodeURIComponent(cleanDest)}&expired=1`,
+          { replace: true }
+        )
+      })
+    return () => {
+      active = false
+    }
+  }, [handoffCode])
 
   useEffect(() => {
     if (token && !activeWorkspaceId) {
@@ -65,12 +103,26 @@ export function AppLayout() {
     return () => leaveWorkspaceRoom(activeWorkspaceId)
   }, [token, activeWorkspaceId])
 
+  if (handoffPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] text-[var(--text-secondary)] text-sm">
+        Connecting your EchoSpace session...
+      </div>
+    )
+  }
+
   if (!isAuthenticated || !token) {
-    return <Navigate to="/login" replace />
+    const dest = `${location.pathname}${location.search}`
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(dest)}`}
+        replace
+      />
+    )
   }
 
   return (
-    <div className="min-h-screen h-screen flex bg-[#09090B] text-[#F4F4F5] overflow-hidden">
+    <div className="min-h-screen h-screen flex bg-[var(--bg-primary)] text-[var(--text-primary)] overflow-hidden">
       <Sidebar
         mobileOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

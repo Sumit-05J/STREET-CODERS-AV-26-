@@ -21,7 +21,7 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-[#F4F4F5] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="flex justify-center">
           <Logo to="/" />
@@ -31,10 +31,10 @@ export function ForgotPasswordPage() {
           {!sent ? (
             <>
               <div className="space-y-1">
-                <h1 className="text-xl font-semibold text-[#F4F4F5]">
+                <h1 className="text-xl font-semibold text-[var(--text-primary)]">
                   Reset your password
                 </h1>
-                <p className="text-xs text-[#A1A1AA]">
+                <p className="text-xs text-[var(--text-secondary)]">
                   Enter your email and we will simulate a password reset link
                   (demo UI).
                 </p>
@@ -60,13 +60,13 @@ export function ForgotPasswordPage() {
             </>
           ) : (
             <div className="text-center space-y-3 py-2">
-              <CheckCircle2 className="w-9 h-9 text-emerald-400 mx-auto" />
-              <h2 className="text-lg font-semibold text-[#F4F4F5]">
+              <CheckCircle2 className="w-9 h-9 text-[var(--success)] mx-auto" />
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Demo reset link prepared
               </h2>
-              <p className="text-xs text-[#A1A1AA] leading-relaxed">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                 If a backend email service were connected, instructions would be
-                sent to <span className="text-[#F4F4F5]">{email}</span>.
+                sent to <span className="text-[var(--text-primary)]">{email}</span>.
               </p>
               <Link to="/login" className="inline-block pt-2">
                 <Button variant="secondary" size="sm">
@@ -80,7 +80,7 @@ export function ForgotPasswordPage() {
         <div className="text-center">
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 text-xs text-[#A1A1AA] hover:text-[#F4F4F5]"
+            className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to Sign In

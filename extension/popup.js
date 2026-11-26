@@ -15,6 +15,7 @@ const DIRECT_AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|flac|webm)(\?.*)?$/i
 let state = {
   apiBaseUrl: 'http://localhost:8080/api',
   webAppUrl: 'http://localhost:5173',
+  themePreference: 'system',
   token: null,
   user: null,
   mode: 'STUDY',
@@ -32,6 +33,42 @@ let currentPlayerTime = 0
 
 const el = (id) => document.getElementById(id)
 
+function resolveExtensionTheme(pref) {
+  if (pref === 'dark' || pref === 'light') return pref
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function getExtensionWaveformColors() {
+  const isDark = document.documentElement.dataset.theme === 'dark'
+  return {
+    waveColor: isDark ? '#42453e' : '#cfcac0',
+    progressColor:
+      state.mode === 'STUDY'
+        ? isDark
+          ? '#5d947d'
+          : '#3f6a58'
+        : isDark
+          ? '#e86b48'
+          : '#d9532f',
+    cursorColor: isDark ? '#f2f0e9' : '#181816',
+  }
+}
+
+function applyExtensionTheme(pref) {
+  const valid = ['light', 'dark', 'system'].includes(pref) ? pref : 'system'
+  state.themePreference = valid
+  const resolved = resolveExtensionTheme(valid)
+  document.documentElement.dataset.theme = resolved
+  const btn = el('theme-btn')
+  if (btn) {
+    btn.textContent =
+      valid === 'system' ? 'Theme: Auto' : valid === 'dark' ? 'Theme: Dark' : 'Theme: Light'
+  }
+  if (wsInstance?.setOptions) {
+    wsInstance.setOptions(getExtensionWaveformColors())
+  }
+}
+
 function formatSec(sec) {
   const s = Math.max(0, Math.floor(sec || 0))
   const m = Math.floor(s / 60)
@@ -45,6 +82,28 @@ function escapeHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+async function openEchoSpacePath(targetPath) {
+  let finalPath = targetPath
+  if (state.token) {
+    try {
+      const { code } = await apiFetch('/auth/handoff', { method: 'POST' })
+      if (code) {
+        const sep = finalPath.includes('?') ? '&' : '?'
+        finalPath = `${finalPath}${sep}handoff=${encodeURIComponent(code)}`
+      }
+    } catch {
+      // If handoff fails (e.g. 401), apiFetch handles session expiry
+      return
+    }
+  }
+  const url = `${state.webAppUrl}${finalPath}`
+  if (chrome.tabs?.create) {
+    await chrome.tabs.create({ url })
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
 }
 
 function destroyWaveform() {
@@ -214,11 +273,12 @@ function loadWaveform(audioUrl, sourceLabel) {
   audioEl.preload = 'metadata'
   audioElement = audioEl
 
+  const wfColors = getExtensionWaveformColors()
   const ws = window.WaveSurfer.create({
     container: el('waveform'),
-    waveColor: '#3f3f46',
-    progressColor: '#8b5cf6',
-    cursorColor: '#22d3ee',
+    waveColor: wfColors.waveColor,
+    progressColor: wfColors.progressColor,
+    cursorColor: wfColors.cursorColor,
     height: 38,
     barWidth: 2,
     barGap: 2,
@@ -469,6 +529,7 @@ async function init() {
   const stored = await chrome.storage.local.get([
     'apiBaseUrl',
     'webAppUrl',
+    'themePreference',
     'token',
     'user',
     'lastWorkspaceId',
@@ -476,6 +537,15 @@ async function init() {
   ])
   if (stored.apiBaseUrl) state.apiBaseUrl = stored.apiBaseUrl
   if (stored.webAppUrl) state.webAppUrl = stored.webAppUrl
+  applyExtensionTheme(stored.themePreference || 'system')
+
+  if (window.matchMedia) {
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', () => {
+        if (state.themePreference === 'system') applyExtensionTheme('system')
+      })
+  }
   if (stored.lastWorkspaceId) state.activeWorkspaceId = stored.lastWorkspaceId
   if (stored.lastMode === 'STUDY' || stored.lastMode === 'CREATOR') {
     state.mode = stored.lastMode
@@ -497,6 +567,13 @@ async function init() {
   }
   showLoginView()
 }
+
+el('theme-btn')?.addEventListener('click', async () => {
+  const order = ['system', 'light', 'dark']
+  const next = order[(order.indexOf(state.themePreference) + 1) % order.length]
+  applyExtensionTheme(next)
+  await chrome.storage.local.set({ themePreference: next })
+})
 
 el('options-btn').addEventListener('click', () => {
   chrome.runtime.openOptionsPage()
@@ -672,5 +749,21 @@ el('annotate-form').addEventListener('submit', async (e) => {
 
 window.addEventListener('pagehide', destroyWaveform)
 window.addEventListener('unload', destroyWaveform)
+
+for (const linkId of ['open-workspace-link', 'open-discussion-link', 'open-app-link']) {
+  const linkEl = el(linkId)
+  if (!linkEl) continue
+  linkEl.addEventListener('click', (e) => {
+    const href = linkEl.getAttribute('href') || ''
+    if (!href || href === '#') return
+    e.preventDefault()
+    try {
+      const parsed = new URL(href)
+      openEchoSpacePath(`${parsed.pathname}${parsed.search}`)
+    } catch {
+      openEchoSpacePath('/app/recordings')
+    }
+  })
+}
 
 init()
