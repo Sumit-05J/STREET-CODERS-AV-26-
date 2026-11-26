@@ -42,29 +42,76 @@
       <!-- Main Capture View -->
       <section id="capture-view" class="stack hidden">
         <div class="user-bar">
-          <span id="user-name" class="user-name"></span>
+          <span id="user-name" class="user-name truncate"></span>
           <div class="mode-toggle">
             <button id="mode-study" type="button" class="mode-btn active">Study</button>
             <button id="mode-creator" type="button" class="mode-btn">Creator</button>
           </div>
         </div>
 
+        <!-- Workspace & Episode Selection -->
         <div class="card stack-sm">
           <div class="row-between">
-            <span class="label">Detected Media</span>
-            <button id="refresh-media" type="button" class="link-btn">Refresh</button>
+            <label class="label" for="workspace-select">Workspace</label>
+            <a id="open-workspace-link" href="#" target="_blank" rel="noopener noreferrer" class="link-btn accent-link">
+              Open Workspace ↗
+            </a>
+          </div>
+          <select id="workspace-select" required></select>
+
+          <label class="field">
+            <span>Audio Source / Episode</span>
+            <select id="episode-select">
+              <option value="__TAB__">Active Tab Media</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Detected Media / Context -->
+        <div class="card stack-sm">
+          <div class="row-between">
+            <span class="label">Media Context</span>
+            <button id="refresh-media" type="button" class="link-btn">Refresh Tab</button>
           </div>
           <p id="media-title" class="media-title">Inspecting active tab...</p>
           <p id="media-url" class="muted truncate"></p>
           <div id="media-status" class="status-pill"></div>
+
+          <div class="row-between gap-sm">
+            <button id="add-workspace-btn" type="button" class="btn btn-secondary hidden">
+              + Add to Workspace
+            </button>
+            <span id="linked-badge" class="badge hidden">Linked in Workspace</span>
+          </div>
+
+          <div id="existing-discussion" class="discussion-box hidden">
+            <div class="row-between">
+              <span id="discussion-count" class="discussion-title">0 discussions</span>
+              <a id="open-discussion-link" href="#" target="_blank" rel="noopener noreferrer" class="link-btn accent-link">
+                Open at Timestamp ↗
+              </a>
+            </div>
+            <div id="discussion-list" class="discussion-list"></div>
+          </div>
         </div>
 
-        <form id="annotate-form" class="card stack-sm">
-          <label class="field">
-            <span>Workspace</span>
-            <select id="workspace-select" required></select>
-          </label>
+        <!-- Waveform Player -->
+        <div id="waveform-card" class="card stack-sm">
+          <div class="row-between">
+            <span class="label">Waveform Player</span>
+            <span id="wf-time" class="mono muted">0:00 / 0:00</span>
+          </div>
+          <div id="waveform-controls" class="wf-controls hidden">
+            <button id="wf-play-btn" type="button" class="btn btn-secondary btn-sm">
+              Play
+            </button>
+            <div id="waveform" class="waveform-box"></div>
+          </div>
+          <p id="waveform-message" class="muted"></p>
+        </div>
 
+        <!-- Quick Annotation Form -->
+        <form id="annotate-form" class="card stack-sm">
           <div class="grid-2">
             <label class="field">
               <span>Category</span>
@@ -72,13 +119,18 @@
             </label>
             <label class="field">
               <span>Timestamp (sec)</span>
-              <input id="timestamp-input" type="number" min="0" step="1" value="0" />
+              <div class="row-gap">
+                <input id="timestamp-input" type="number" min="0" step="1" value="0" />
+                <button id="wf-sync-btn" type="button" class="btn btn-secondary btn-xs" title="Use current player time">
+                  Now
+                </button>
+              </div>
             </label>
           </div>
 
           <label class="field">
             <span>Annotation Note</span>
-            <textarea id="note-input" rows="3" required placeholder="Write a question, insight, or feedback note..."></textarea>
+            <textarea id="note-input" rows="3" required placeholder="Write a question, note, or feedback..."></textarea>
           </label>
 
           <p id="capture-error" class="error hidden"></p>
@@ -94,6 +146,7 @@
       </section>
     </div>
 
+    <script src="vendor/wavesurfer.min.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

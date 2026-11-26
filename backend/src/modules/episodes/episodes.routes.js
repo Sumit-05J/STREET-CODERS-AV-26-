@@ -10,6 +10,7 @@ import {
   createExternalEpisode,
   deleteEpisode,
   getEpisode,
+  lookupEpisodeByUrl,
   streamEpisodeAudio,
   uploadEpisode,
 } from './episodes.controller.js'
@@ -33,6 +34,7 @@ router.use(requireAuth)
 
 router.post('/upload', uploadLimiter, upload.single('audio'), uploadEpisode)
 router.post('/external', createExternalEpisode)
+router.get('/lookup', lookupEpisodeByUrl)
 router.get('/:id', getEpisode)
 router.get('/:id/audio', streamEpisodeAudio)
 router.delete('/:id', deleteEpisode)

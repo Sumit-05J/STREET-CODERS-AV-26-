@@ -17,6 +17,7 @@ import { PlaylistsPage } from './pages/PlaylistsPage'
 import { MembersPage } from './pages/MembersPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ClipSharePage } from './pages/ClipSharePage'
+import { JoinWorkspacePage } from './pages/JoinWorkspacePage'
 
 export function App() {
   return (
@@ -27,6 +28,7 @@ export function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/workspaces" element={<WorkspaceSelectionPage />} />
+        <Route path="/join/:token" element={<JoinWorkspacePage />} />
         <Route path="/clips/:id" element={<ClipSharePage />} />
 
         <Route path="/app" element={<AppLayout />}>

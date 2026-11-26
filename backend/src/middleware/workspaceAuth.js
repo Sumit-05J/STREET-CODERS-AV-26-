@@ -1,9 +1,11 @@
 import { prisma } from '../config/prisma.js'
 import { AppError } from '../utils/errors.js'
 
-export const ALL_ROLES = ['OWNER', 'EDITOR', 'MEMBER', 'VIEWER']
-export const WRITE_ROLES = ['OWNER', 'EDITOR', 'MEMBER']
-export const MANAGE_ROLES = ['OWNER', 'EDITOR']
+export const ALL_ROLES = ['OWNER', 'ADMIN', 'EDITOR', 'MEMBER', 'VIEWER']
+export const WRITE_ROLES = ['OWNER', 'ADMIN', 'EDITOR', 'MEMBER']
+export const MANAGE_ROLES = ['OWNER', 'ADMIN', 'EDITOR']
+export const ADMIN_ROLES = ['OWNER', 'ADMIN']
+export const OWNER_ROLES = ['OWNER']
 
 export async function assertWorkspaceMember(
   workspaceId,

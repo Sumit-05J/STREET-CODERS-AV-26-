@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Info } from 'lucide-react'
 import { Logo } from '../components/common/Logo'
 import { Card } from '../components/ui/Card'
@@ -9,6 +9,8 @@ import { useEchoStore } from '../store/useEchoStore'
 
 export function RegisterPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTarget = searchParams.get('redirect')
   const registerWithBackend = useEchoStore((s) => s.registerWithBackend)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -39,7 +41,7 @@ export function RegisterPage() {
         email: email.trim(),
         password,
       })
-      navigate('/workspaces')
+      navigate(redirectTarget || '/workspaces')
     } catch (err) {
       setApiError(
         err.response?.data?.error?.message ||

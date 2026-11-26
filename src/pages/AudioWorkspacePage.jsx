@@ -9,6 +9,7 @@ import {
   Plus,
   ExternalLink,
   Trash2,
+  Bookmark,
 } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -30,6 +31,34 @@ import {
 import { apiClient } from '../services/api'
 
 const DIRECT_AUDIO_EXT_RE = /\.(mp3|wav|ogg|m4a|aac|flac|webm)(\?.*)?$/i
+
+function getOfficialEmbedUrl(rawUrl) {
+  try {
+    const parsed = new URL(rawUrl)
+    const host = parsed.hostname.toLowerCase()
+    if (host.includes('youtube.com')) {
+      const v = parsed.searchParams.get('v')
+      if (v) return `https://www.youtube.com/embed/${encodeURIComponent(v)}`
+      const parts = parsed.pathname.split('/').filter(Boolean)
+      if (parts[0] === 'embed' && parts[1]) {
+        return `https://www.youtube.com/embed/${encodeURIComponent(parts[1])}`
+      }
+    }
+    if (host === 'youtu.be') {
+      const id = parsed.pathname.split('/').filter(Boolean)[0]
+      if (id) return `https://www.youtube.com/embed/${encodeURIComponent(id)}`
+    }
+    if (host.includes('vimeo.com')) {
+      const id = parsed.pathname.split('/').filter(Boolean).pop()
+      if (id && /^\d+$/.test(id)) {
+        return `https://player.vimeo.com/video/${id}`
+      }
+    }
+  } catch {
+    return null
+  }
+  return null
+}
 
 export function AudioWorkspacePage() {
   const { id } = useParams()
@@ -112,6 +141,19 @@ export function AudioWorkspacePage() {
   const [showChapterForm, setShowChapterForm] = useState(false)
   const [chapterTitle, setChapterTitle] = useState('')
   const [chapterError, setChapterError] = useState('')
+  const [bookmarks, setBookmarks] = useState([])
+  const [bookmarkLabel, setBookmarkLabel] = useState('')
+
+  useEffect(() => {
+    if (!token || !id) {
+      setBookmarks([])
+      return
+    }
+    apiClient
+      .listBookmarks(id)
+      .then((list) => setBookmarks(list || []))
+      .catch(() => setBookmarks([]))
+  }, [token, id])
 
   useEffect(() => {
     if (!token || !id) return
@@ -236,10 +278,12 @@ export function AudioWorkspacePage() {
 
   const playableRecording =
     recording.sourceType === 'UPLOAD'
-      ? {
-          ...recording,
-          audioUrl: apiClient.getEpisodeAudioUrl(recording.id),
-        }
+      ? token
+        ? {
+            ...recording,
+            audioUrl: apiClient.getEpisodeAudioUrl(recording.id, token),
+          }
+        : null
       : isExternalDirectAudio
         ? { ...recording, audioUrl: recording.sourceUrl }
         : null
@@ -503,6 +547,18 @@ export function AudioWorkspacePage() {
                 )}
               </div>
 
+              {getOfficialEmbedUrl(recording.sourceUrl) && (
+                <div className="aspect-video w-full overflow-hidden rounded-lg border border-[#27272F] bg-black">
+                  <iframe
+                    src={getOfficialEmbedUrl(recording.sourceUrl)}
+                    title={recording.title}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+
               {canWrite && (
                 <div className="pt-3 border-t border-[#27272F] flex flex-wrap items-center gap-2">
                   <Button
@@ -586,6 +642,85 @@ export function AudioWorkspacePage() {
             ) : (
               <p className="text-xs text-[#71717A]">
                 No chapters added yet. Seek to a moment and click Add Chapter.
+              </p>
+            )}
+          </Card>
+
+          {/* Bookmarks Card */}
+          <Card className="p-5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#A1A1AA] inline-flex items-center gap-1.5">
+                <Bookmark className="w-3.5 h-3.5 text-[#22D3EE]" />
+                Bookmarks ({bookmarks.length})
+              </span>
+              {canWrite && (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault()
+                    await handleAction(async () => {
+                      const created = await apiClient.createBookmark(recording.id, {
+                        timestamp: Math.floor(currentTime),
+                        label: bookmarkLabel.trim() || null,
+                      })
+                      setBookmarks((prev) =>
+                        [...prev, created].sort((a, b) => a.timestamp - b.timestamp)
+                      )
+                      setBookmarkLabel('')
+                    }, 'Failed to save bookmark.')
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    value={bookmarkLabel}
+                    onChange={(e) => setBookmarkLabel(e.target.value)}
+                    placeholder="Optional label..."
+                    className="h-8 px-2.5 rounded-lg bg-[#09090B] border border-[#27272F] text-xs text-[#F4F4F5] placeholder-[#71717A] focus:outline-none focus:border-[#22D3EE]"
+                  />
+                  <Button type="submit" size="sm" variant="secondary">
+                    <Bookmark className="w-3.5 h-3.5" />
+                    Save ({formatTime(currentTime)})
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            {bookmarks.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {bookmarks.map((bm) => (
+                  <div
+                    key={bm.id}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#09090B] border border-[#27272F] text-xs"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => seekTo(bm.timestamp, true)}
+                      className="inline-flex items-center gap-1.5 text-[#E4E4E7] hover:text-[#22D3EE] cursor-pointer"
+                    >
+                      <span className="font-mono text-[#22D3EE]">
+                        {formatTime(bm.timestamp)}
+                      </span>
+                      {bm.label && <span>{bm.label}</span>}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAction(async () => {
+                          await apiClient.deleteBookmark(bm.id)
+                          setBookmarks((prev) => prev.filter((x) => x.id !== bm.id))
+                        }, 'Failed to delete bookmark.')
+                      }
+                      className="text-[#71717A] hover:text-rose-400 cursor-pointer"
+                      title="Remove bookmark"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#71717A]">
+                Save personal timestamp bookmarks to quickly revisit key moments.
               </p>
             )}
           </Card>

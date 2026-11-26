@@ -9,10 +9,14 @@ import {
   Clock,
   ArrowRight,
   Sparkles,
+  Users,
+  KeyRound,
 } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import { Modal } from '../ui/Modal'
+import { Input, Textarea } from '../ui/Input'
 import { ClipCard } from '../clips/ClipCard'
 import { PlaylistCard } from '../workspace/PlaylistCard'
 import { useEchoStore } from '../../store/useEchoStore'
@@ -29,11 +33,25 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
   const storeMode = useEchoStore((s) => s.mode)
   const setMode = useEchoStore((s) => s.setMode)
   const user = useEchoStore((s) => s.user)
+  const workspaces = useEchoStore((s) => s.workspaces)
+  const activeWorkspaceId = useEchoStore((s) => s.activeWorkspaceId)
+  const selectWorkspace = useEchoStore((s) => s.selectWorkspace)
+  const createAndSelectWorkspace = useEchoStore((s) => s.createAndSelectWorkspace)
+  const joinWorkspaceByCode = useEchoStore((s) => s.joinWorkspaceByCode)
   const recordings = useEchoStore((s) => s.recordings)
   const annotations = useEchoStore((s) => s.annotations)
   const clips = useEchoStore((s) => s.clips)
   const playlists = useEchoStore((s) => s.playlists)
   const activity = useEchoStore((s) => s.activity)
+
+  const [createWsOpen, setCreateWsOpen] = React.useState(false)
+  const [joinWsOpen, setJoinWsOpen] = React.useState(false)
+  const [wsName, setWsName] = React.useState('')
+  const [wsDesc, setWsDesc] = React.useState('')
+  const [wsMode, setWsMode] = React.useState(targetMode || storeMode || 'study')
+  const [joinCode, setJoinCode] = React.useState('')
+  const [wsError, setWsError] = React.useState('')
+  const [wsBusy, setWsBusy] = React.useState(false)
 
   const activeMode = targetMode || storeMode
   const cfg = getModeConfig(activeMode)
@@ -111,13 +129,76 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => navigate('/app/playlists')}
+            onClick={() => {
+              setWsError('')
+              setJoinWsOpen(true)
+            }}
           >
-            <ListMusic className="w-3.5 h-3.5" />
-            {cfg.secondaryAction.label}
+            <KeyRound className="w-3.5 h-3.5" />
+            Join Workspace
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setWsError('')
+              setWsMode(activeMode)
+              setCreateWsOpen(true)
+            }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            New Workspace
           </Button>
         </div>
       </div>
+
+      {/* My Workspaces */}
+      {workspaces.length > 0 && (
+        <section className="space-y-2.5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[#F4F4F5]">
+              My Workspaces ({workspaces.length})
+            </h2>
+            <Link
+              to="/app/members"
+              className="text-xs text-[#A1A1AA] hover:text-[#F4F4F5] inline-flex items-center gap-1"
+            >
+              Manage members &amp; invites <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {workspaces.map((ws) => (
+              <Card
+                key={ws.id}
+                interactive
+                onClick={() => {
+                  selectWorkspace(ws.id)
+                  navigate(ws.mode === 'STUDY' ? '/app/study' : '/app/creator')
+                }}
+                className={`p-3.5 cursor-pointer flex items-center justify-between gap-3 ${
+                  ws.id === activeWorkspaceId ? 'border-[#8B5CF6]/60 bg-[#141418]' : ''
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <Badge tone={ws.mode === 'STUDY' ? 'cyan' : 'primary'}>
+                      {ws.mode}
+                    </Badge>
+                    <Badge tone="neutral">{ws.myRole}</Badge>
+                  </div>
+                  <p className="text-sm font-medium text-[#F4F4F5] truncate mt-1.5">
+                    {ws.name}
+                  </p>
+                </div>
+                <span className="text-[11px] text-[#71717A] inline-flex items-center gap-1 shrink-0">
+                  <Users className="w-3 h-3" />
+                  {ws._count?.members ?? 1}
+                </span>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Stats Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -355,6 +436,134 @@ export function ModeWorkspaceOverview({ targetMode, titleOverride, subtitleOverr
           </Card>
         </div>
       </div>
+
+      <Modal
+        isOpen={createWsOpen}
+        onClose={() => setCreateWsOpen(false)}
+        title="Create Workspace"
+        subtitle="Create a collaborative Study or Creator workspace."
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            if (!wsName.trim()) {
+              setWsError('Workspace name is required.')
+              return
+            }
+            try {
+              setWsBusy(true)
+              setWsError('')
+              const created = await createAndSelectWorkspace({
+                name: wsName.trim(),
+                description: wsDesc.trim(),
+                mode: wsMode,
+              })
+              setWsName('')
+              setWsDesc('')
+              setCreateWsOpen(false)
+              navigate(created.mode === 'STUDY' ? '/app/study' : '/app/creator')
+            } catch (err) {
+              setWsError(err.response?.data?.error?.message || err.message)
+            } finally {
+              setWsBusy(false)
+            }
+          }}
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-2 gap-1 bg-[#09090B] p-1 rounded-lg border border-[#27272F]">
+            {['study', 'creator'].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setWsMode(m)}
+                className={`py-1.5 text-xs font-medium rounded-md capitalize cursor-pointer ${
+                  wsMode === m
+                    ? 'bg-[#18181D] text-[#F4F4F5]'
+                    : 'text-[#A1A1AA]'
+                }`}
+              >
+                {m} Mode
+              </button>
+            ))}
+          </div>
+          <Input
+            label="Workspace Name"
+            placeholder="e.g. Distributed Systems Study Group"
+            value={wsName}
+            onChange={(e) => setWsName(e.target.value)}
+          />
+          <Textarea
+            label="Description (optional)"
+            placeholder="Workspace description..."
+            value={wsDesc}
+            onChange={(e) => setWsDesc(e.target.value)}
+          />
+          {wsError && <p className="text-xs text-rose-400">{wsError}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" onClick={() => setCreateWsOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={wsBusy}>
+              {wsBusy ? 'Creating...' : 'Create Workspace'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={joinWsOpen}
+        onClose={() => setJoinWsOpen(false)}
+        title="Join Workspace"
+        subtitle="Enter an invitation code or paste an invitation link."
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            const raw = joinCode.trim()
+            if (!raw) {
+              setWsError('Enter an invitation code or link.')
+              return
+            }
+            const tokenMatch = raw.match(/\/join\/([^/?#]+)/)
+            if (tokenMatch) {
+              setJoinWsOpen(false)
+              navigate(`/join/${tokenMatch[1]}`)
+              return
+            }
+            try {
+              setWsBusy(true)
+              setWsError('')
+              const res = await joinWorkspaceByCode(raw)
+              setJoinCode('')
+              setJoinWsOpen(false)
+              navigate(
+                res.workspace.mode === 'STUDY' ? '/app/study' : '/app/creator'
+              )
+            } catch (err) {
+              setWsError(err.response?.data?.error?.message || err.message)
+            } finally {
+              setWsBusy(false)
+            }
+          }}
+          className="space-y-4"
+        >
+          <Input
+            label="Invitation Code or Link"
+            placeholder="ECHO-XXXXXX or http://localhost:5173/join/..."
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value)}
+          />
+          {wsError && <p className="text-xs text-rose-400">{wsError}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" onClick={() => setJoinWsOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={wsBusy}>
+              {wsBusy ? 'Joining...' : 'Join Workspace'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

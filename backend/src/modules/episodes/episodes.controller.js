@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { prisma } from '../../config/prisma.js'
 import { AppError, asyncHandler } from '../../utils/errors.js'
 import { storage } from '../../utils/storage.js'
+import { canonicalizeUrl } from '../../utils/url.js'
 import {
   ALL_ROLES,
   assertEpisodeMember,
@@ -86,16 +87,20 @@ export const createExternalEpisode = asyncHandler(async (req, res) => {
     throw new AppError(400, 'Only http/https URLs are supported.', 'INVALID_URL')
   }
 
+  const canonicalUrl = canonicalizeUrl(body.sourceUrl)
+  const candidateUrls = Array.from(new Set([canonicalUrl, body.sourceUrl]))
+
   if (body.reuseExisting) {
     const existing = await prisma.episode.findFirst({
       where: {
         workspaceId: body.workspaceId,
-        sourceType: 'EXTERNAL_LINK',
-        sourceUrl: body.sourceUrl,
+        deletedAt: null,
+        sourceUrl: { in: candidateUrls },
       },
       include: {
         uploader: { select: { id: true, name: true, avatarColor: true } },
         chapters: true,
+        _count: { select: { annotations: true, clips: true } },
       },
     })
     if (existing) {
@@ -111,13 +116,14 @@ export const createExternalEpisode = asyncHandler(async (req, res) => {
       title: body.title.trim(),
       description: body.description.trim(),
       sourceType: 'EXTERNAL_LINK',
-      sourceUrl: body.sourceUrl,
+      sourceUrl: canonicalUrl,
       duration: body.duration || 0,
       tags: body.tags,
     },
     include: {
       uploader: { select: { id: true, name: true, avatarColor: true } },
       chapters: true,
+      _count: { select: { annotations: true, clips: true } },
     },
   })
 
@@ -135,6 +141,43 @@ export const createExternalEpisode = asyncHandler(async (req, res) => {
   }
 
   res.status(201).json({ episode, reused: false })
+})
+
+export const lookupEpisodeByUrl = asyncHandler(async (req, res) => {
+  const workspaceId = String(req.query.workspaceId || '').trim()
+  const rawUrl = String(req.query.url || '').trim()
+  if (!workspaceId || !rawUrl) {
+    throw new AppError(
+      400,
+      'workspaceId and url query parameters are required.',
+      'INVALID_QUERY'
+    )
+  }
+
+  await assertWorkspaceMember(workspaceId, req.user.id, ALL_ROLES)
+
+  const canonicalUrl = canonicalizeUrl(rawUrl)
+  const candidateUrls = Array.from(new Set([canonicalUrl, rawUrl]))
+
+  const episode = await prisma.episode.findFirst({
+    where: {
+      workspaceId,
+      deletedAt: null,
+      sourceUrl: { in: candidateUrls },
+    },
+    include: {
+      _count: { select: { annotations: true, clips: true } },
+      annotations: {
+        orderBy: { timestamp: 'asc' },
+        take: 5,
+        include: {
+          user: { select: { id: true, name: true, avatarColor: true } },
+        },
+      },
+    },
+  })
+
+  res.json({ episode: episode || null, canonicalUrl })
 })
 
 export const uploadEpisode = asyncHandler(async (req, res) => {
@@ -308,6 +351,11 @@ export const streamEpisodeAudio = asyncHandler(async (req, res) => {
       'Content-Length': chunkSize,
       'Content-Type': episode.mimeType,
     })
+    stream.on('error', () => {
+      if (!res.headersSent) res.status(500).end()
+      else res.end()
+    })
+    res.on('close', () => stream.destroy?.())
     stream.pipe(res)
   } else {
     const stream = await storage.createReadStream(episode.audioKey)
@@ -316,6 +364,11 @@ export const streamEpisodeAudio = asyncHandler(async (req, res) => {
       'Accept-Ranges': 'bytes',
       'Content-Type': episode.mimeType,
     })
+    stream.on('error', () => {
+      if (!res.headersSent) res.status(500).end()
+      else res.end()
+    })
+    res.on('close', () => stream.destroy?.())
     stream.pipe(res)
   }
 })

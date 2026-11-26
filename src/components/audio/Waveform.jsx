@@ -34,6 +34,10 @@ export function Waveform({
 
     const accent = mode === 'study' ? '#22D3EE' : '#8B5CF6'
 
+    const audioEl = new Audio()
+    audioEl.crossOrigin = 'anonymous'
+    audioEl.preload = 'metadata'
+
     const ws = WaveSurfer.create({
       container,
       waveColor: '#3F3F46',
@@ -45,6 +49,7 @@ export function Waveform({
       barRadius: 2,
       height,
       normalize: true,
+      media: audioEl,
       url: audioUrl,
     })
 
@@ -83,6 +88,9 @@ export function Waveform({
 
     return () => {
       isCleanedUp = true
+      audioEl.pause()
+      audioEl.removeAttribute('src')
+      audioEl.load()
       ws.destroy()
       internalWsRef.current = null
       if (externalRef) externalRef.current = null

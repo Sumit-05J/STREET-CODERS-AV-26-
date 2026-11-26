@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Info } from 'lucide-react'
 import { Logo } from '../components/common/Logo'
 import { Card } from '../components/ui/Card'
@@ -9,6 +9,8 @@ import { useEchoStore } from '../store/useEchoStore'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTarget = searchParams.get('redirect')
   const loginWithBackend = useEchoStore((s) => s.loginWithBackend)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,7 +35,7 @@ export function LoginPage() {
     try {
       setLoading(true)
       await loginWithBackend({ email: email.trim(), password })
-      navigate('/workspaces')
+      navigate(redirectTarget || '/workspaces')
     } catch (err) {
       setApiError(
         err.response?.data?.error?.message ||
@@ -108,7 +110,14 @@ export function LoginPage() {
 
         <p className="text-center text-xs text-[#A1A1AA]">
           New to EchoSpace?{' '}
-          <Link to="/register" className="text-[#F4F4F5] hover:underline font-medium">
+          <Link
+            to={
+              redirectTarget
+                ? `/register?redirect=${encodeURIComponent(redirectTarget)}`
+                : '/register'
+            }
+            className="text-[#F4F4F5] hover:underline font-medium"
+          >
             Create an account
           </Link>
         </p>

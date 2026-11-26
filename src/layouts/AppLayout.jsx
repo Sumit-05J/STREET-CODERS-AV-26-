@@ -4,7 +4,11 @@ import { Sidebar } from '../components/layout/Sidebar'
 import { Navbar } from '../components/layout/Navbar'
 import { UploadRecordingModal } from '../components/dashboard/UploadRecordingModal'
 import { useEchoStore } from '../store/useEchoStore'
-import { getSocket } from '../services/socket'
+import {
+  getSocket,
+  joinWorkspaceRoom,
+  leaveWorkspaceRoom,
+} from '../services/socket'
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -16,6 +20,11 @@ export function AppLayout() {
   const loadWorkspaces = useEchoStore((s) => s.loadWorkspaces)
   const loadNotifications = useEchoStore((s) => s.loadNotifications)
   const addSocketNotification = useEchoStore((s) => s.addSocketNotification)
+  const applySocketMemberJoined = useEchoStore((s) => s.applySocketMemberJoined)
+  const applySocketMemberRemoved = useEchoStore((s) => s.applySocketMemberRemoved)
+  const applySocketAnnotationCreated = useEchoStore(
+    (s) => s.applySocketAnnotationCreated
+  )
 
   useEffect(() => {
     if (token && !activeWorkspaceId) {
@@ -31,9 +40,30 @@ export function AppLayout() {
     const onNotif = ({ notification }) => {
       if (notification) addSocketNotification(notification)
     }
+    const onMemberJoined = ({ member }) => applySocketMemberJoined(member)
+    const onMemberRemoved = ({ userId }) => applySocketMemberRemoved(userId)
+    const onWsAnnCreated = ({ annotation }) => {
+      if (annotation) applySocketAnnotationCreated(annotation)
+    }
+
     socket.on('notification:created', onNotif)
-    return () => socket.off('notification:created', onNotif)
+    socket.on('workspace:member_joined', onMemberJoined)
+    socket.on('workspace:member_removed', onMemberRemoved)
+    socket.on('workspace:annotation_created', onWsAnnCreated)
+
+    return () => {
+      socket.off('notification:created', onNotif)
+      socket.off('workspace:member_joined', onMemberJoined)
+      socket.off('workspace:member_removed', onMemberRemoved)
+      socket.off('workspace:annotation_created', onWsAnnCreated)
+    }
   }, [token, loadNotifications, addSocketNotification])
+
+  useEffect(() => {
+    if (!token || !activeWorkspaceId) return
+    joinWorkspaceRoom(activeWorkspaceId)
+    return () => leaveWorkspaceRoom(activeWorkspaceId)
+  }, [token, activeWorkspaceId])
 
   if (!isAuthenticated || !token) {
     return <Navigate to="/login" replace />

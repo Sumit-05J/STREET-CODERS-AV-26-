@@ -8,6 +8,7 @@ import { prisma } from '../../config/prisma.js'
 import { env } from '../../config/env.js'
 import { safeDownloadToFile } from '../../utils/ssrf.js'
 import { storage } from '../../utils/storage.js'
+import { transcribeAudio } from './transcription.provider.js'
 
 const execFileAsync = promisify(execFile)
 const MAX_CONCURRENT = 2
@@ -56,7 +57,7 @@ async function detectAudioFromBytes(filePath) {
 async function probeDuration(filePath) {
   try {
     const { stdout } = await execFileAsync(
-      'ffprobe',
+      env.ffprobePath || 'ffprobe',
       [
         '-v',
         'error',
@@ -75,6 +76,23 @@ async function probeDuration(filePath) {
   }
 }
 
+async function extractAudioWithFfmpeg(videoPath, outputMp3Path) {
+  try {
+    await execFileAsync(
+      env.ffmpegPath || 'ffmpeg',
+      ['-y', '-i', videoPath, '-vn', '-acodec', 'libmp3lame', '-q:a', '2', outputMp3Path],
+      { timeout: 10 * 60 * 1000 }
+    )
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(
+        'FFmpeg is not installed on the server. Install FFmpeg or set FFMPEG_PATH to extract audio from uploaded video files.'
+      )
+    }
+    throw new Error(`FFmpeg audio extraction failed: ${err.message}`)
+  }
+}
+
 async function isJobCancelled(jobId) {
   const row = await prisma.importJob.findUnique({
     where: { id: jobId },
@@ -86,40 +104,73 @@ async function isJobCancelled(jobId) {
 async function processJob(job) {
   ensureTempDir()
   const rawTempPath = path.join(tempDir, `${uuidv4()}.tmp`)
+  const videoTempPath =
+    job.sourceKind === 'VIDEO_UPLOAD' ? job.metadata?.tempVideoPath || null : null
 
   try {
     if (await isJobCancelled(job.id)) return
 
-    let lastPct = 5
-    const { cancelled, downloaded } = await safeDownloadToFile(
-      job.sourceUrl,
-      rawTempPath,
-      {
-        maxBytes: env.maxFileSizeBytes,
-        timeoutMs: 30000,
-        shouldCancel: () => isJobCancelled(job.id),
-        onProgress: async (bytes, total) => {
-          const pct = Math.min(75, 10 + Math.round((bytes / total) * 65))
-          if (pct - lastPct >= 10) {
-            lastPct = pct
-            await prisma.importJob
-              .update({ where: { id: job.id }, data: { progress: pct } })
-              .catch(() => {})
-          }
-        },
+    let detected = null
+    let fileSize = 0
+    let workingAudioPath = rawTempPath
+
+    if (job.sourceKind === 'VIDEO_UPLOAD') {
+      if (!videoTempPath || !fs.existsSync(videoTempPath)) {
+        throw new Error('Uploaded video temp file is missing.')
       }
-    )
+      await prisma.importJob
+        .update({
+          where: { id: job.id },
+          data: {
+            progress: 25,
+            metadata: { ...(job.metadata || {}), stage: 'EXTRACTING_AUDIO' },
+          },
+        })
+        .catch(() => {})
 
-    if (cancelled || (await isJobCancelled(job.id))) return
-
-    const detected = await detectAudioFromBytes(rawTempPath)
-    if (!detected) {
-      throw new Error(
-        'Downloaded file is not a supported audio format (MP3, WAV, M4A, OGG, FLAC, AAC, WebM).'
+      workingAudioPath = path.join(tempDir, `${uuidv4()}.mp3`)
+      await extractAudioWithFfmpeg(videoTempPath, workingAudioPath)
+      const stat = await fs.promises.stat(workingAudioPath)
+      fileSize = stat.size
+      detected = { ext: '.mp3', mime: 'audio/mpeg' }
+    } else {
+      let lastPct = 5
+      const { cancelled, downloaded } = await safeDownloadToFile(
+        job.sourceUrl,
+        rawTempPath,
+        {
+          maxBytes: env.maxFileSizeBytes,
+          timeoutMs: 30000,
+          shouldCancel: () => isJobCancelled(job.id),
+          onProgress: async (bytes, total) => {
+            const pct = Math.min(75, 10 + Math.round((bytes / total) * 65))
+            if (pct - lastPct >= 10) {
+              lastPct = pct
+              await prisma.importJob
+                .update({
+                  where: { id: job.id },
+                  data: {
+                    progress: pct,
+                    metadata: { ...(job.metadata || {}), stage: 'DOWNLOADING' },
+                  },
+                })
+                .catch(() => {})
+            }
+          },
+        }
       )
+
+      if (cancelled || (await isJobCancelled(job.id))) return
+      fileSize = downloaded
+      detected = await detectAudioFromBytes(rawTempPath)
+      if (!detected) {
+        throw new Error(
+          'Downloaded file is not a supported audio format (MP3, WAV, M4A, OGG, FLAC, AAC, WebM).'
+        )
+      }
     }
 
-    const probedDuration = await probeDuration(rawTempPath)
+    const probedDuration = await probeDuration(workingAudioPath)
     const metaDuration = Number(job.metadata?.duration || 0)
     const duration = probedDuration > 0 ? probedDuration : metaDuration
 
@@ -129,8 +180,29 @@ async function processJob(job) {
 
     if (await isJobCancelled(job.id)) return
 
+    await prisma.importJob
+      .update({
+        where: { id: job.id },
+        data: {
+          progress: 85,
+          metadata: { ...(job.metadata || {}), stage: 'TRANSCRIBING' },
+        },
+      })
+      .catch(() => {})
+
+    const transcription = await transcribeAudio({
+      filePath: workingAudioPath,
+      mimeType: detected.mime,
+      duration,
+    }).catch((err) => ({
+      status: 'FAILED',
+      reason: err.message,
+      segments: [],
+      chapters: [],
+    }))
+
     const targetKey = `${uuidv4()}${detected.ext}`
-    await storage.saveLocalFile(rawTempPath, targetKey, detected.mime)
+    await storage.saveLocalFile(workingAudioPath, targetKey, detected.mime)
 
     if (await isJobCancelled(job.id)) {
       await storage.remove(targetKey).catch(() => {})
@@ -144,12 +216,15 @@ async function processJob(job) {
         title: job.title,
         description:
           job.metadata?.description ||
-          `Imported from ${new URL(job.sourceUrl).hostname}`,
+          (job.sourceKind === 'VIDEO_UPLOAD'
+            ? `Extracted audio from ${job.metadata?.originalName || 'uploaded video'}`
+            : `Imported from ${new URL(job.sourceUrl).hostname}`),
         sourceType: 'UPLOAD',
-        sourceUrl: job.sourceUrl,
+        sourceUrl:
+          job.sourceKind === 'VIDEO_UPLOAD' ? null : job.sourceUrl,
         audioKey: targetKey,
         mimeType: detected.mime,
-        fileSize: downloaded,
+        fileSize,
         duration,
         tags: Array.isArray(job.metadata?.tags) ? job.metadata.tags : [],
       },
@@ -161,6 +236,12 @@ async function processJob(job) {
         status: 'COMPLETED',
         progress: 100,
         episodeId: episode.id,
+        metadata: {
+          ...(job.metadata || {}),
+          tempVideoPath: undefined,
+          stage: 'COMPLETED',
+          transcription,
+        },
       },
     })
   } catch (err) {
@@ -172,12 +253,16 @@ async function processJob(job) {
           data: {
             status: 'FAILED',
             error: err.message || 'Import failed.',
+            metadata: { ...(job.metadata || {}), stage: 'FAILED' },
           },
         })
         .catch(() => {})
     }
   } finally {
     await fs.promises.unlink(rawTempPath).catch(() => {})
+    if (videoTempPath) {
+      await fs.promises.unlink(videoTempPath).catch(() => {})
+    }
   }
 }
 

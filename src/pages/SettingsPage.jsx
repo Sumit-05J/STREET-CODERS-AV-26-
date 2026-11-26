@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Check } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Check, Trash2 } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
@@ -9,16 +9,22 @@ import { Badge } from '../components/ui/Badge'
 import { useEchoStore } from '../store/useEchoStore'
 
 export function SettingsPage() {
+  const navigate = useNavigate()
   const user = useEchoStore((s) => s.user)
+  const mode = useEchoStore((s) => s.mode)
+  const activeWorkspaceId = useEchoStore((s) => s.activeWorkspaceId)
+  const activeWorkspaceRole = useEchoStore((s) => s.activeWorkspaceRole)
   const members = useEchoStore((s) => s.members)
   const workspaceSettings = useEchoStore((s) => s.workspaceSettings)
   const updateProfile = useEchoStore((s) => s.updateProfile)
   const updateWorkspaceSettings = useEchoStore((s) => s.updateWorkspaceSettings)
+  const deleteWorkspace = useEchoStore((s) => s.deleteWorkspace)
 
   const [name, setName] = useState(user?.name || '')
   const [studyName, setStudyName] = useState(workspaceSettings.studyName)
   const [creatorName, setCreatorName] = useState(workspaceSettings.creatorName)
   const [saving, setSaving] = useState(false)
+  const [deletingWs, setDeletingWs] = useState(false)
   const [savedNotice, setSavedNotice] = useState(false)
   const [error, setError] = useState('')
 
@@ -206,6 +212,63 @@ export function SettingsPage() {
           </Button>
         </div>
       </form>
+
+      {activeWorkspaceId && activeWorkspaceRole === 'OWNER' && (
+        <Card className="p-5 border-rose-500/30 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-rose-400">
+                Danger Zone — Delete Workspace
+              </h2>
+              <p className="text-xs text-[#A1A1AA] mt-0.5">
+                Permanently delete{' '}
+                <strong className="text-[#F4F4F5]">
+                  {mode === 'study'
+                    ? workspaceSettings.studyName
+                    : workspaceSettings.creatorName}
+                </strong>{' '}
+                and all its recordings, annotations, clips, playlists,
+                invitations, and memberships.
+              </p>
+            </div>
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={deletingWs}
+              onClick={async () => {
+                const wsLabel =
+                  mode === 'study'
+                    ? workspaceSettings.studyName
+                    : workspaceSettings.creatorName
+                if (
+                  !window.confirm(
+                    `Permanently delete "${wsLabel}" and all its associated workspace data? This cannot be undone.`
+                  )
+                ) {
+                  return
+                }
+                try {
+                  setDeletingWs(true)
+                  setError('')
+                  await deleteWorkspace(activeWorkspaceId)
+                  navigate('/workspaces')
+                } catch (err) {
+                  setError(
+                    err.response?.data?.error?.message ||
+                      err.message ||
+                      'Failed to delete workspace.'
+                  )
+                } finally {
+                  setDeletingWs(false)
+                }
+              }}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {deletingWs ? 'Deleting...' : 'Delete Workspace'}
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

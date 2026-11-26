@@ -69,10 +69,14 @@ export function UploadRecordingModal({ isOpen, onClose }) {
       setTitle(selected.name.replace(/\.[^/.]+$/, ''))
     }
     const objUrl = URL.createObjectURL(selected)
-    const audio = new Audio(objUrl)
-    audio.addEventListener('loadedmetadata', () => {
-      if (Number.isFinite(audio.duration)) {
-        setDuration(Math.round(audio.duration))
+    const isVideo =
+      selected.type?.startsWith('video/') ||
+      /\.(mp4|mov|mkv|m4v|avi)$/i.test(selected.name)
+    const mediaEl = document.createElement(isVideo ? 'video' : 'audio')
+    mediaEl.src = objUrl
+    mediaEl.addEventListener('loadedmetadata', () => {
+      if (Number.isFinite(mediaEl.duration)) {
+        setDuration(Math.round(mediaEl.duration))
       }
       URL.revokeObjectURL(objUrl)
     })
@@ -196,6 +200,32 @@ export function UploadRecordingModal({ isOpen, onClose }) {
     try {
       setSubmitting(true)
       setProgress(0)
+      const isVideoFile =
+        sourceTab === 'upload' &&
+        file &&
+        (file.type?.startsWith('video/') ||
+          /\.(mp4|mov|mkv|m4v|avi)$/i.test(file.name))
+
+      if (isVideoFile) {
+        if (!activeWorkspaceId) {
+          setError('No active workspace selected.')
+          return
+        }
+        const res = await apiClient.uploadVideoImport({
+          workspaceId: activeWorkspaceId,
+          file,
+          title: title.trim(),
+          description: description.trim(),
+          tags,
+          duration,
+          onProgress: setProgress,
+        })
+        if (res.job) {
+          setImportJob(res.job)
+        }
+        return
+      }
+
       const created =
         sourceTab === 'upload'
           ? await uploadEpisode({
@@ -283,7 +313,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
           <label className="block p-3.5 rounded-lg bg-[#09090B] border border-dashed border-[#27272F] hover:border-[#8B5CF6]/60 transition-colors cursor-pointer">
             <input
               type="file"
-              accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,audio/*"
+              accept=".mp3,.wav,.ogg,.m4a,.aac,.flac,.webm,.mp4,.mov,.mkv,.m4v,.avi,audio/*,video/*"
               onChange={handleFileChange}
               className="hidden"
             />
@@ -295,7 +325,7 @@ export function UploadRecordingModal({ isOpen, onClose }) {
                 <p className="font-medium text-[#F4F4F5] truncate">
                   {file
                     ? `${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`
-                    : 'Click to select MP3, WAV, OGG, M4A, or WebM audio'}
+                    : 'Click to select audio (.mp3, .wav, .m4a, .ogg) or video (.mp4, .mov, .mkv)'}
                 </p>
                 <p className="text-[#A1A1AA]">
                   {duration > 0
@@ -343,13 +373,22 @@ export function UploadRecordingModal({ isOpen, onClose }) {
                     key={`${ep.enclosureUrl}-${idx}`}
                     className="flex items-center justify-between gap-2 py-1.5 border-t border-[#27272F]"
                   >
-                    <div className="min-w-0">
-                      <p className="text-xs text-[#E4E4E7] truncate">
-                        {ep.title}
-                      </p>
-                      <p className="text-[10px] text-[#71717A] font-mono">
-                        {ep.duration > 0 ? formatTime(ep.duration) : 'Audio'}
-                      </p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      {ep.artworkUrl && (
+                        <img
+                          src={ep.artworkUrl}
+                          alt=""
+                          className="w-8 h-8 rounded object-cover shrink-0 border border-[#27272F]"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-xs text-[#E4E4E7] truncate">
+                          {ep.title}
+                        </p>
+                        <p className="text-[10px] text-[#71717A] font-mono">
+                          {ep.duration > 0 ? formatTime(ep.duration) : 'Audio'}
+                        </p>
+                      </div>
                     </div>
                     <Button
                       type="button"
@@ -366,13 +405,30 @@ export function UploadRecordingModal({ isOpen, onClose }) {
 
             {importJob && (
               <div className="p-3 rounded-lg bg-[#09090B] border border-[#27272F] space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="font-medium text-[#F4F4F5]">
                     Status: {importJob.status}
+                    {importJob.metadata?.stage && importJob.metadata.stage !== importJob.status
+                      ? ` (${importJob.metadata.stage})`
+                      : ''}
                   </span>
-                  <span className="font-mono text-[#A1A1AA]">
-                    {importJob.progress}%
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[#A1A1AA]">
+                      {importJob.progress}%
+                    </span>
+                    {['QUEUED', 'PROCESSING'].includes(importJob.status) && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const cancelled = await apiClient.cancelImportJob(importJob.id)
+                          setImportJob(cancelled)
+                        }}
+                        className="text-rose-400 hover:underline cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {importJob.error && (
                   <div className="flex items-center justify-between gap-2 text-rose-400">

@@ -108,14 +108,17 @@ async function run() {
   const studyEpId = uploadRes.data.episode.id
 
   console.log('6. Streaming audio with HTTP Range request (206 Partial Content)...')
-  const rangeRes = await fetch(`${BASE_URL}/episodes/${studyEpId}/audio`, {
+  const rangeRes = await fetch(`${BASE_URL}/episodes/${studyEpId}/audio?token=${encodeURIComponent(token2)}`, {
     headers: {
-      Authorization: `Bearer ${token2}`,
+      Origin: 'http://localhost:5173',
       Range: 'bytes=0-511',
     },
   })
   assert.equal(rangeRes.status, 206)
+  assert.equal(rangeRes.headers.get('accept-ranges'), 'bytes')
   assert.ok(rangeRes.headers.get('content-range')?.startsWith('bytes 0-511/'))
+  assert.ok(rangeRes.headers.get('content-type')?.startsWith('audio/'))
+  assert.equal(rangeRes.headers.get('access-control-allow-origin'), 'http://localhost:5173')
 
   console.log('   Connecting Socket.IO for user2 in episode room...')
   const socket2 = io(SOCKET_URL, { auth: { token: token2 } })
@@ -390,7 +393,195 @@ async function run() {
   const getDeletedEp = await api('GET', `/episodes/${studyEpId}`, { token: token1 })
   assert.equal(getDeletedEp.status, 404)
 
-  console.log('\nALL 15 END-TO-END WORKFLOW CHECKS PASSED!')
+  console.log('16. Testing multi-user Workspace Invitations, Join Link/Code, Socket rooms & RBAC...')
+  const collabWsRes = await api('POST', '/workspaces', {
+    token: token1,
+    body: {
+      name: 'Hackathon Demo Collab',
+      description: 'Multi-user audio review room',
+      mode: 'STUDY',
+    },
+  })
+  assert.equal(collabWsRes.status, 201)
+  const collabWsId = collabWsRes.data.workspace.id
+  assert.equal(collabWsRes.data.workspace.myRole, 'OWNER')
+
+  // Unauthorized user2 cannot access collabWsId before joining
+  const unauthWs = await api('GET', `/workspaces/${collabWsId}`, { token: token2 })
+  assert.equal(unauthWs.status, 403)
+
+  // User1 connects to workspace:<collabWsId> Socket.IO room
+  const wsSocket1 = io(SOCKET_URL, { auth: { token: token1 } })
+  await new Promise((resolve, reject) => {
+    wsSocket1.on('connect', () => {
+      wsSocket1.emit('workspace:join', { workspaceId: collabWsId }, (ack) => {
+        if (ack?.ok) resolve()
+        else reject(new Error(ack?.error || 'Failed to join workspace room'))
+      })
+    })
+    wsSocket1.on('connect_error', reject)
+  })
+  const memberJoinedPromise = new Promise((resolve) => {
+    wsSocket1.once('workspace:member_joined', resolve)
+  })
+
+  // User1 generates invitation link & code
+  const invRes = await api('POST', `/workspaces/${collabWsId}/invitations`, {
+    token: token1,
+    body: { role: 'MEMBER', expiresInHours: 24 },
+  })
+  assert.equal(invRes.status, 201)
+  const { inviteToken, invitation } = invRes.data
+
+  // Preview invitation
+  const previewRes = await api('GET', `/invitations/${inviteToken}`)
+  assert.equal(previewRes.status, 200)
+  assert.equal(previewRes.data.invitation.workspace.name, 'Hackathon Demo Collab')
+
+  // User2 accepts invitation via link token
+  const acceptRes = await api('POST', `/invitations/${inviteToken}/accept`, {
+    token: token2,
+  })
+  assert.equal(acceptRes.status, 200)
+  assert.equal(acceptRes.data.alreadyMember, false)
+  assert.equal(acceptRes.data.role, 'MEMBER')
+
+  const joinedEvent = await memberJoinedPromise
+  assert.equal(joinedEvent.member.user.email, u2Email)
+  wsSocket1.disconnect()
+
+  // Accepting again must not duplicate membership
+  const acceptAgain = await api('POST', `/invitations/${inviteToken}/accept`, {
+    token: token2,
+  })
+  assert.equal(acceptAgain.status, 200)
+  assert.equal(acceptAgain.data.alreadyMember, true)
+
+  // User2 (MEMBER) cannot create invitations or delete workspace
+  const memberCreateInv = await api('POST', `/workspaces/${collabWsId}/invitations`, {
+    token: token2,
+    body: { role: 'MEMBER' },
+  })
+  assert.equal(memberCreateInv.status, 403)
+
+  const memberDelWs = await api('DELETE', `/workspaces/${collabWsId}`, {
+    token: token2,
+  })
+  assert.equal(memberDelWs.status, 403)
+
+  // Revoke invitation & verify 410 on preview/join
+  const revokeRes = await api(
+    'DELETE',
+    `/workspaces/${collabWsId}/invitations/${invitation.id}`,
+    { token: token1 }
+  )
+  assert.equal(revokeRes.status, 204)
+
+  const revokedPreview = await api('GET', `/invitations/${inviteToken}`)
+  assert.equal(revokedPreview.status, 410)
+
+  const invalidJoin = await api('POST', '/workspaces/join', {
+    token: token2,
+    body: { code: 'ECHO-INVALID1' },
+  })
+  assert.equal(invalidJoin.status, 404)
+
+  // User1 removes User2 & verifies User2 loses access
+  const membersRes = await api('GET', `/workspaces/${collabWsId}/members`, {
+    token: token1,
+  })
+  const u2Member = membersRes.data.members.find((m) => m.user.email === u2Email)
+  assert.ok(u2Member)
+
+  const removeRes = await api(
+    'DELETE',
+    `/workspaces/${collabWsId}/members/${u2Member.userId}`,
+    { token: token1 }
+  )
+  assert.equal(removeRes.status, 204)
+
+  const afterRemoveWs = await api('GET', `/workspaces/${collabWsId}`, { token: token2 })
+  assert.equal(afterRemoveWs.status, 403)
+
+  // Upload an MP3 into collabWsId and verify workspace deletion removes it from disk
+  const collabUploadForm = new FormData()
+  collabUploadForm.append('audio', createFakeMp3Blob(), 'collab-delete-check.mp3')
+  collabUploadForm.append('workspaceId', collabWsId)
+  collabUploadForm.append('title', 'Workspace Delete Cleanup Check')
+  const collabEpRes = await api('POST', '/episodes/upload', {
+    token: token1,
+    body: collabUploadForm,
+    isForm: true,
+  })
+  assert.equal(collabEpRes.status, 201)
+  const collabAudioKey = collabEpRes.data.episode.audioKey
+  const collabAudioPath = path.resolve(process.cwd(), 'backend', 'uploads', collabAudioKey)
+  assert.ok(fs.existsSync(collabAudioPath), `Expected uploaded file at ${collabAudioPath}`)
+
+  // Cleanup workspace (OWNER only) & verify physical audio cleanup
+  const delCollabWs = await api('DELETE', `/workspaces/${collabWsId}`, { token: token1 })
+  assert.equal(delCollabWs.status, 204)
+
+  const afterDelWs = await api('GET', `/workspaces/${collabWsId}`, { token: token1 })
+  assert.equal(afterDelWs.status, 403)
+  assert.ok(!fs.existsSync(collabAudioPath), `Expected uploaded file to be removed: ${collabAudioPath}`)
+
+  // 17. Test Bookmarks, Canonical URL Lookup & Video Upload ImportJob
+  console.log('17. Testing Bookmarks, Canonical URL Lookup & Video ImportJob...')
+  const ytCreate = await api('POST', '/episodes/external', {
+    token: token1,
+    body: {
+      workspaceId: studyWsId,
+      title: 'Canonical YouTube Test',
+      sourceUrl: 'https://youtu.be/dQw4w9WgXcQ?utm_source=share',
+      duration: 60,
+    },
+  })
+  assert.equal(ytCreate.status, 201)
+  const ytEpId = ytCreate.data.episode.id
+
+  const bmCreate = await api('POST', `/episodes/${ytEpId}/bookmarks`, {
+    token: token1,
+    body: { timestamp: 12, label: 'Key Raft point' },
+  })
+  assert.equal(bmCreate.status, 201)
+  const bmList = await api('GET', `/episodes/${ytEpId}/bookmarks`, { token: token1 })
+  assert.equal(bmList.status, 200)
+  assert.ok(bmList.data.bookmarks.some((b) => b.id === bmCreate.data.bookmark.id))
+  const bmDel = await api('DELETE', `/bookmarks/${bmCreate.data.bookmark.id}`, { token: token1 })
+  assert.equal(bmDel.status, 204)
+
+  const ytLookup = await api(
+    'GET',
+    `/episodes/lookup?workspaceId=${studyWsId}&url=${encodeURIComponent('https://www.youtube.com/watch?v=dQw4w9WgXcQ')}`,
+    { token: token1 }
+  )
+  assert.equal(ytLookup.status, 200)
+  assert.equal(ytLookup.data.episode?.id, ytEpId)
+
+  const badVideoForm = new FormData()
+  badVideoForm.append('video', new Blob(['not video'], { type: 'text/plain' }), 'bad.txt')
+  badVideoForm.append('workspaceId', studyWsId)
+  const badVideoRes = await api('POST', '/imports/video', {
+    token: token1,
+    body: badVideoForm,
+    isForm: true,
+  })
+  assert.equal(badVideoRes.status, 400)
+
+  const mp4Form = new FormData()
+  mp4Form.append('video', new Blob([Buffer.from('00000018667479706d703432', 'hex')], { type: 'video/mp4' }), 'sample.mp4')
+  mp4Form.append('workspaceId', studyWsId)
+  mp4Form.append('title', 'Sample Video Extraction')
+  const mp4Res = await api('POST', '/imports/video', {
+    token: token1,
+    body: mp4Form,
+    isForm: true,
+  })
+  assert.equal(mp4Res.status, 202)
+  assert.equal(mp4Res.data.job.sourceKind, 'VIDEO_UPLOAD')
+
+  console.log('\nALL 17 END-TO-END WORKFLOW CHECKS PASSED!')
 }
 
 run().catch((err) => {

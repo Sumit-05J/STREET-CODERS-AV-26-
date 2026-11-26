@@ -7,7 +7,7 @@ import {
   MANAGE_ROLES,
   WRITE_ROLES,
 } from '../../middleware/workspaceAuth.js'
-import { emitEpisodeEvent } from '../../sockets/index.js'
+import { emitEpisodeEvent, emitWorkspaceEvent } from '../../sockets/index.js'
 
 const MODE_CATEGORIES = {
   STUDY: ['QUESTION', 'NOTE'],
@@ -103,6 +103,9 @@ export const createAnnotation = asyncHandler(async (req, res) => {
   })
 
   emitEpisodeEvent(episode.id, 'annotation:created', { annotation })
+  emitWorkspaceEvent(episode.workspaceId, 'workspace:annotation_created', {
+    annotation,
+  })
 
   res.status(201).json({ annotation })
 })

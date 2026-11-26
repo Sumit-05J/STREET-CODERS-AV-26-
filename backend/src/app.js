@@ -6,6 +6,7 @@ import { errorHandler } from './middleware/errorHandler.js'
 import authRoutes from './modules/auth/auth.routes.js'
 import usersRoutes from './modules/users/users.routes.js'
 import workspacesRoutes from './modules/workspaces/workspaces.routes.js'
+import invitationsRoutes from './modules/invitations/invitations.routes.js'
 import episodesRoutes from './modules/episodes/episodes.routes.js'
 import annotationsRoutes from './modules/annotations/annotations.routes.js'
 import repliesRoutes from './modules/replies/replies.routes.js'
@@ -15,6 +16,7 @@ import playlistsRoutes from './modules/playlists/playlists.routes.js'
 import rssRoutes from './modules/rss/rss.routes.js'
 import notificationsRoutes from './modules/notifications/notifications.routes.js'
 import importsRoutes from './modules/imports/imports.routes.js'
+import bookmarksRoutes from './modules/bookmarks/bookmarks.routes.js'
 
 export function createApp() {
   const app = express()
@@ -55,6 +57,7 @@ export function createApp() {
   app.use('/api/auth', authRoutes)
   app.use('/api/users', usersRoutes)
   app.use('/api/workspaces', workspacesRoutes)
+  app.use('/api/invitations', invitationsRoutes)
   app.use('/api/episodes', episodesRoutes)
   app.use('/api', annotationsRoutes)
   app.use('/api', repliesRoutes)
@@ -64,6 +67,7 @@ export function createApp() {
   app.use('/api', rssRoutes)
   app.use('/api/notifications', notificationsRoutes)
   app.use('/api', importsRoutes)
+  app.use('/api', bookmarksRoutes)
 
   app.use((_req, res) => {
     res.status(404).json({

@@ -41,3 +41,13 @@ export function leaveEpisodeRoom(episodeId) {
   if (!socket || !episodeId) return
   socket.emit('episode:leave', { episodeId })
 }
+
+export function joinWorkspaceRoom(workspaceId) {
+  if (!socket || !workspaceId) return
+  socket.emit('workspace:join', { workspaceId })
+}
+
+export function leaveWorkspaceRoom(workspaceId) {
+  if (!socket || !workspaceId) return
+  socket.emit('workspace:leave', { workspaceId })
+}

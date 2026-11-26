@@ -143,6 +143,7 @@ export const useEchoStore = create(
       clips: [],
       playlists: [],
       members: [],
+      invitations: [],
       activity: [],
       notifications: [],
       unreadNotifications: 0,
@@ -193,6 +194,7 @@ export const useEchoStore = create(
           clips: [],
           playlists: [],
           members: [],
+          invitations: [],
           activity: [],
           notifications: [],
           unreadNotifications: 0,
@@ -226,12 +228,32 @@ export const useEchoStore = create(
         return workspaces
       },
 
-      createAndSelectWorkspace: async ({ name, mode }) => {
+      createAndSelectWorkspace: async ({ name, description = '', mode }) => {
         const apiMode = mode.toUpperCase()
-        const ws = await apiClient.createWorkspace({ name, mode: apiMode })
+        const ws = await apiClient.createWorkspace({ name, description, mode: apiMode })
         await get().loadWorkspaces()
         await get().selectWorkspace(ws.id)
         return ws
+      },
+
+      joinWorkspaceByCode: async (code) => {
+        const res = await apiClient.joinWorkspaceByCode(code)
+        await get().loadWorkspaces()
+        await get().selectWorkspace(res.workspace.id)
+        return res
+      },
+
+      acceptInvitation: async (token) => {
+        const res = await apiClient.acceptInvitation(token)
+        await get().loadWorkspaces()
+        await get().selectWorkspace(res.workspace.id)
+        return res
+      },
+
+      deleteWorkspace: async (workspaceId) => {
+        await apiClient.deleteWorkspace(workspaceId)
+        set({ activeWorkspaceId: null, invitations: [] })
+        await get().loadWorkspaces()
       },
 
       selectWorkspace: async (workspaceId) => {
@@ -285,6 +307,7 @@ export const useEchoStore = create(
           clips: mappedClips,
           playlists: mappedPlaylists,
           members: mappedMembers,
+          invitations: ws.invitations || [],
           activity,
           workspaceSettings: {
             ...state.workspaceSettings,
@@ -672,6 +695,62 @@ export const useEchoStore = create(
             : [...state.members, norm],
         }))
         return norm
+      },
+
+      removeMember: async (memberId) => {
+        const { activeWorkspaceId } = get()
+        if (!activeWorkspaceId) throw new Error('No active workspace selected.')
+        await apiClient.removeWorkspaceMember(activeWorkspaceId, memberId)
+        set((state) => ({
+          members: state.members.filter((m) => m.id !== memberId),
+        }))
+      },
+
+      createInvitation: async ({ role, expiresInHours }) => {
+        const { activeWorkspaceId } = get()
+        if (!activeWorkspaceId) throw new Error('No active workspace selected.')
+        const res = await apiClient.createInvitation(activeWorkspaceId, {
+          role,
+          expiresInHours,
+        })
+        set((state) => ({
+          invitations: [res.invitation, ...state.invitations],
+        }))
+        return res
+      },
+
+      revokeInvitation: async (invitationId) => {
+        const { activeWorkspaceId } = get()
+        if (!activeWorkspaceId) throw new Error('No active workspace selected.')
+        await apiClient.revokeInvitation(activeWorkspaceId, invitationId)
+        set((state) => ({
+          invitations: state.invitations.filter((i) => i.id !== invitationId),
+        }))
+      },
+
+      applySocketMemberJoined: (member) => {
+        if (!member?.user) return
+        const mode = get().mode
+        const norm = {
+          id: member.user.id,
+          name: member.user.name,
+          email: member.user.email,
+          role: member.role,
+          modes: [mode],
+          status: 'Active',
+          avatarColor: member.user.avatarColor || '#22D3EE',
+        }
+        set((state) => ({
+          members: state.members.some((m) => m.id === norm.id)
+            ? state.members.map((m) => (m.id === norm.id ? norm : m))
+            : [...state.members, norm],
+        }))
+      },
+
+      applySocketMemberRemoved: (userId) => {
+        set((state) => ({
+          members: state.members.filter((m) => m.id !== userId),
+        }))
       },
 
       updateProfile: async (updates) => {

@@ -11,9 +11,11 @@ EchoSpace is a full-stack, PostgreSQL-backed audio collaboration platform with a
 ### 1. Frontend Web Application (`src/`)
 Built with **React 19**, **Vite**, **Tailwind CSS v4**, **React Router**, **Zustand**, **WaveSurfer.js**, **Axios**, and **Socket.IO Client**.
 
-- **Authentication & RBAC Workspaces**: Real registration/login, JWT persistence, protected `/app/*` routes ([AppLayout.jsx](file:///c:/Users/sumit/EchoSpace/src/layouts/AppLayout.jsx)), and dual-mode workspace switching (**Study Mode** & **Creator Mode**) driven by [modeConfig.js](file:///c:/Users/sumit/EchoSpace/src/config/modeConfig.js).
+- **Authentication & RBAC Workspaces**: Real registration/login, JWT persistence, protected `/app/*` routes ([AppLayout.jsx](file:///c:/Users/sumit/EchoSpace/src/layouts/AppLayout.jsx)), **Create Workspace** (name, description, Study/Creator mode), **Join Workspace** via `/join/:token` invitation link or `ECHO-XXXXXX` code, **My Workspaces** dashboard cards, **Owner-only Delete Workspace** (in [SettingsPage.jsx](file:///c:/Users/sumit/EchoSpace/src/pages/SettingsPage.jsx) Danger Zone, with confirmation, DB cascade cleanup, and exclusive uploaded-audio storage removal), and dual-mode switching driven by [modeConfig.js](file:///c:/Users/sumit/EchoSpace/src/config/modeConfig.js).
+- **Members & Invitations (`/app/members`, `/join/:token`)**: Generate hashed invitation links and short invite codes with optional expiry and role (`ADMIN`, `EDITOR`, `MEMBER`, `VIEWER`), revoke invitations, remove members, and receive live `workspace:<workspaceId>` Socket.IO updates.
 - **Unified Audio Workspace (`/app/recordings/:id`)**:
-  - Single authoritative [AudioPlayer.jsx](file:///c:/Users/sumit/EchoSpace/src/components/audio/AudioPlayer.jsx) + [Waveform.jsx](file:///c:/Users/sumit/EchoSpace/src/components/audio/Waveform.jsx) rendering real WaveSurfer.js waveforms (with React StrictMode cleanup guard, pending pre-ready seek queue, and live JWT stream URLs).
+  - Single authoritative [AudioPlayer.jsx](file:///c:/Users/sumit/EchoSpace/src/components/audio/AudioPlayer.jsx) + [Waveform.jsx](file:///c:/Users/sumit/EchoSpace/src/components/audio/Waveform.jsx) using WaveSurfer.js backed by an `HTMLAudioElement` (`crossOrigin="anonymous"`, `preload="metadata"`) for native HTTP `206 Partial Content` Range streaming, explicit JWT `?token=` passing, React StrictMode cleanup guard, and pending pre-ready seek queue.
+  - Official YouTube/Vimeo `<iframe>` embeds for `EXTERNAL_LINK` video episodes (no unauthorized downloading), plus personal **Bookmarks** (`/api/episodes/:id/bookmarks`) for revisiting timestamps.
   - **Study Mode**: Timestamped **Questions** and unified **Notes** (legacy `INSIGHT`/`REVISION` migrated/normalized to `NOTE`); clicking any question/note card or notification navigates directly to its exact timestamp.
   - **Creator Mode**: Timestamped **Feedback**, **Corrections**, and **Suggestions** with `OPEN`/`RESOLVED` status tracking, chapters, playlists, and RSS 2.0 feeds.
   - **Manual Highlight Recording & Clips**: **Start Highlight / Stop Highlight / Cancel** during playback to capture exact intervals, preview intervals in [ClipModal.jsx](file:///c:/Users/sumit/EchoSpace/src/components/clips/ClipModal.jsx), play `[startTime, endTime]` intervals (stopping or looping at `endTime`), delete clips, and share via `/clips/:token` ([ClipSharePage.jsx](file:///c:/Users/sumit/EchoSpace/src/pages/ClipSharePage.jsx)).
@@ -23,22 +25,24 @@ Built with **React 19**, **Vite**, **Tailwind CSS v4**, **React Router**, **Zust
 ### 2. Backend API, Database & Worker (`backend/`)
 Built with **Node.js**, **Express.js**, **Prisma ORM**, **PostgreSQL**, **JWT**, **bcryptjs**, **Zod**, **Multer**, **Socket.IO**, `@aws-sdk/client-s3`, and `fast-xml-parser`.
 
-- **PostgreSQL Schema & Migrations (`backend/prisma/schema.prisma`, `backend/prisma/migrations/0001_init/migration.sql`, `backend/prisma/upgrade_legacy_notes.sql`)**:
-  - UUID models: `User`, `Workspace`, `WorkspaceMember`, `Show`, `Episode` (with `deletedAt` staged soft-delete), `Annotation`, `AnnotationReply`, `Clip`, `Chapter`, `Playlist`, `PlaylistEpisode`, `Bookmark`, `Notification`, and `ImportJob`.
-- **Auth & Workspaces**: `/api/auth/*`, `/api/users/me`, `/api/workspaces/*` with rate limiting and `OWNER`/`EDITOR`/`MEMBER`/`VIEWER` RBAC.
+- **PostgreSQL Schema & Migrations (`backend/prisma/schema.prisma`, `backend/prisma/migrations/0001_init/migration.sql`, `0002_workspace_invitations/migration.sql`, `backend/prisma/upgrade_legacy_notes.sql`)**:
+  - UUID models: `User`, `Workspace` (with `description`), `WorkspaceMember` (`OWNER`, `ADMIN`, `EDITOR`, `MEMBER`, `VIEWER`), `WorkspaceInvitation` (`tokenHash`, `code`, `expiresAt`, `revokedAt`), `Show`, `Episode` (with `deletedAt` staged soft-delete), `Annotation`, `AnnotationReply`, `Clip`, `Chapter`, `Playlist`, `PlaylistEpisode`, `Bookmark`, `Notification`, and `ImportJob`.
+- **Auth & Workspaces**: `/api/auth/*`, `/api/users/me`, `/api/workspaces/*`, `/api/invitations/:token`, `/api/invitations/:token/accept`, `/api/workspaces/join` with rate limiting and server-enforced RBAC.
 - **Audio Upload, Streaming & Storage (`backend/src/utils/storage.js`)**:
   - Supports `STORAGE_DRIVER=local` (dev/persistent disk, `EXDEV`-safe) and `STORAGE_DRIVER=s3` (S3-compatible object storage with range reads).
   - `POST /api/episodes/upload` (extension + magic-byte validation, orphan cleanup), `POST /api/episodes/external`, `GET /api/episodes/:id/audio` (`206 Partial Content` Range streaming), `DELETE /api/episodes/:id` (atomic `deletedAt` soft-delete → storage removal → hard-delete, with startup pending-delete recovery).
-- **External Audio & RSS Import Queue (`backend/src/modules/imports/`, `backend/src/utils/ssrf.js`)**:
-  - `POST /api/imports`, `POST /api/imports/rss/preview`, `POST /api/imports/rss/episode`, `GET /api/imports/:id`, `POST /api/imports/:id/retry`, `POST /api/imports/:id/cancel`.
-  - DB-backed persistent queue (`QUEUED` → `PROCESSING` → `COMPLETED` / `FAILED` / `CANCELLED`) with atomic job claiming, duplicate active-job prevention, startup recovery, DNS-pinned SSRF protection (blocks localhost/loopback/private/link-local/metadata IPs, validates redirects, pins resolved IP on TCP socket to prevent DNS rebinding), safe XML parsing (`processEntities: false`), and optional `ffprobe` duration detection via `execFile`.
+- **External Audio, Video Extraction & RSS Import Queue (`backend/src/modules/imports/`, `backend/src/modules/imports/transcription.provider.js`, `backend/src/utils/ssrf.js`)**:
+  - `POST /api/imports`, `POST /api/imports/video` (user-uploaded video audio extraction via FFmpeg), `POST /api/imports/rss/preview` (with episode/channel artwork), `POST /api/imports/rss/episode`, `GET /api/imports/:id`, `POST /api/imports/:id/retry`, `POST /api/imports/:id/cancel`.
+  - DB-backed persistent queue (`QUEUED` → `PROCESSING` → `COMPLETED` / `FAILED` / `CANCELLED`) with atomic job claiming, canonical URL duplicate prevention, startup recovery, DNS-pinned SSRF protection, safe XML parsing (`processEntities: false`), optional `ffprobe` duration detection, and an explicit transcription provider interface (`TRANSCRIPTION_PROVIDER=none|openai`, never faking transcripts when unconfigured).
 - **Notifications & Socket.IO**:
   - `/api/notifications`, `/api/notifications/:id/read`, `/api/notifications/read-all`.
   - JWT-authenticated Socket.IO rooms (`user:<id>` and `episode:<id>`) for live annotations, replies, clips, and notifications, plus graceful shutdown on `SIGTERM`/`SIGINT`.
 
 ### 3. Chrome Extension (`extension/`)
-Manifest V3 extension ([manifest.json](file:///c:/Users/sumit/EchoSpace/extension/manifest.json)) with `activeTab`, `storage`, `scripting`:
-- Signs in with your EchoSpace account, selects Study (`QUESTION`/`NOTE`) or Creator (`FEEDBACK`/`CORRECTION`/`SUGGESTION`) mode and workspace, captures accessible HTML5 `<audio>`/`<video>` timestamps, saves `EXTERNAL_LINK` recordings + annotations to the backend, and links directly to EchoSpace.
+Manifest V3 extension ([manifest.json](file:///c:/Users/sumit/EchoSpace/extension/manifest.json)) with `activeTab`, `storage`, `scripting`, and locally bundled [wavesurfer.min.js](file:///c:/Users/sumit/EchoSpace/extension/vendor/wavesurfer.min.js):
+- Signs in with your EchoSpace account (handling expired `401` sessions cleanly), switches and remembers the last selected workspace & Study/Creator mode, and selects either active tab media or any existing workspace episode.
+- Renders a compact **WaveSurfer.js** waveform (play/pause, seek, time/duration) for EchoSpace audio streams and CORS-accessible external audio, and shows explicit status messages when waveform rendering is blocked by CORS or restricted players (YouTube/Vimeo/Spotify/DRM).
+- Detects canonical URLs via `GET /api/episodes/lookup`, avoids duplicate links, surfaces existing discussions with one-click deep links (`/app/recordings/:id?t=...`), and captures timestamped notes/questions.
 
 ---
 

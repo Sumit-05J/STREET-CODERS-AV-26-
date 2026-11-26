@@ -29,6 +29,10 @@ export const env = {
     : path.resolve(backendRoot, configuredUploadDir),
   maxFileSizeBytes: maxMb * 1024 * 1024,
   publicBaseUrl: process.env.PUBLIC_BASE_URL || 'http://localhost:8080',
+  ffmpegPath: process.env.FFMPEG_PATH || 'ffmpeg',
+  ffprobePath: process.env.FFPROBE_PATH || 'ffprobe',
+  transcriptionProvider: process.env.TRANSCRIPTION_PROVIDER || 'none',
+  openaiApiKey: process.env.OPENAI_API_KEY || '',
   s3: {
     endpoint: process.env.S3_ENDPOINT || '',
     region: process.env.S3_REGION || 'us-east-1',

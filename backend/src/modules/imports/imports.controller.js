@@ -1,14 +1,19 @@
+import fs from 'fs'
+import path from 'path'
 import { z } from 'zod'
 import { XMLParser } from 'fast-xml-parser'
 import { prisma } from '../../config/prisma.js'
 import { AppError, asyncHandler } from '../../utils/errors.js'
 import { assertSafePublicUrl, safeFetchText } from '../../utils/ssrf.js'
+import { canonicalizeUrl } from '../../utils/url.js'
 import {
   ALL_ROLES,
   assertWorkspaceMember,
   WRITE_ROLES,
 } from '../../middleware/workspaceAuth.js'
 import { drainImportQueue } from './imports.worker.js'
+
+const ALLOWED_VIDEO_EXTS = new Set(['.mp4', '.mov', '.mkv', '.m4v', '.webm', '.avi'])
 
 const MAX_RSS_BYTES = 2 * 1024 * 1024
 const MAX_RSS_EPISODES = 50
@@ -103,20 +108,34 @@ export const previewRss = asyncHandler(async (req, res) => {
       else if (!Number.isNaN(parts[0])) duration = parts[0]
     }
 
+    const channelArtwork =
+      channel?.['itunes:image']?.['@_href'] ||
+      channel?.image?.url ||
+      ''
+    const itemArtwork =
+      item?.['itunes:image']?.['@_href'] ||
+      item?.image?.url ||
+      channelArtwork
+
     episodes.push({
       title: String(item.title || 'Untitled Episode').slice(0, 200),
       description: String(item.description || '').replace(/<[^>]*>/g, '').slice(0, 600),
       pubDate: item.pubDate || '',
       enclosureUrl,
+      artworkUrl: typeof itemArtwork === 'string' ? itemArtwork : '',
       mimeType: enc?.['@_type'] || 'audio/mpeg',
       duration: Number.isFinite(duration) ? Math.round(duration) : 0,
     })
   }
 
+  const feedArtwork =
+    channel?.['itunes:image']?.['@_href'] || channel?.image?.url || ''
+
   res.json({
     feed: {
       title: String(channel.title || 'Podcast Feed'),
       description: String(channel.description || '').replace(/<[^>]*>/g, '').slice(0, 600),
+      artworkUrl: typeof feedArtwork === 'string' ? feedArtwork : '',
       episodes,
     },
   })
@@ -127,17 +146,33 @@ export const createImport = asyncHandler(async (req, res) => {
   await assertWorkspaceMember(workspaceId, req.user.id, WRITE_ROLES)
 
   await assertSafePublicUrl(url)
+  const canonicalUrl = canonicalizeUrl(url)
 
-  if (isProviderEmbedUrl(url)) {
+  if (isProviderEmbedUrl(canonicalUrl)) {
+    const existing = await prisma.episode.findFirst({
+      where: {
+        workspaceId,
+        deletedAt: null,
+        sourceUrl: { in: [canonicalUrl, url] },
+      },
+    })
+    if (existing) {
+      return res.status(200).json({
+        mode: 'EXTERNAL_LINK',
+        episode: existing,
+        deduplicated: true,
+      })
+    }
+
     // External provider links are stored as EXTERNAL_LINK without unauthorized downloading
     const episode = await prisma.episode.create({
       data: {
         workspaceId,
         uploaderId: req.user.id,
-        title: title?.trim() || `External Media (${new URL(url).hostname})`,
+        title: title?.trim() || `External Media (${new URL(canonicalUrl).hostname})`,
         description,
         sourceType: 'EXTERNAL_LINK',
-        sourceUrl: url,
+        sourceUrl: canonicalUrl,
         duration: 0,
         tags,
       },
@@ -151,7 +186,7 @@ export const createImport = asyncHandler(async (req, res) => {
   const existingActive = await prisma.importJob.findFirst({
     where: {
       workspaceId,
-      sourceUrl: url,
+      sourceUrl: { in: [canonicalUrl, url] },
       status: { in: ['QUEUED', 'PROCESSING'] },
     },
   })
@@ -163,12 +198,12 @@ export const createImport = asyncHandler(async (req, res) => {
     data: {
       workspaceId,
       userId: req.user.id,
-      sourceUrl: url,
+      sourceUrl: canonicalUrl,
       sourceKind: 'DIRECT_AUDIO',
-      title: title?.trim() || pathTitleFromUrl(url),
+      title: title?.trim() || pathTitleFromUrl(canonicalUrl),
       status: 'QUEUED',
       progress: 0,
-      metadata: { description, tags },
+      metadata: { description, tags, stage: 'QUEUED' },
     },
   })
 
@@ -259,4 +294,66 @@ export const cancelImportJob = asyncHandler(async (req, res) => {
     data: { status: 'CANCELLED' },
   })
   res.json({ job })
+})
+
+const videoUploadBodySchema = z.object({
+  workspaceId: z.string().uuid(),
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(2000).optional().default(''),
+  duration: z.coerce.number().min(0).optional().default(0),
+  tags: z.string().optional().default(''),
+})
+
+export const uploadVideoForExtraction = asyncHandler(async (req, res) => {
+  const file = req.file
+  if (!file) {
+    throw new AppError(400, 'Video file is required.', 'MISSING_FILE')
+  }
+
+  try {
+    const body = videoUploadBodySchema.parse(req.body)
+    await assertWorkspaceMember(body.workspaceId, req.user.id, WRITE_ROLES)
+
+    const ext = path.extname(file.originalname || '').toLowerCase()
+    if (!ALLOWED_VIDEO_EXTS.has(ext)) {
+      throw new AppError(
+        400,
+        'Unsupported video format. Allowed: .mp4, .mov, .mkv, .m4v, .webm, .avi',
+        'INVALID_FILE_TYPE'
+      )
+    }
+
+    const parsedTags = body.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+
+    const job = await prisma.importJob.create({
+      data: {
+        workspaceId: body.workspaceId,
+        userId: req.user.id,
+        sourceUrl: `upload://video/${path.basename(file.originalname || 'video' + ext)}`,
+        sourceKind: 'VIDEO_UPLOAD',
+        title:
+          body.title?.trim() ||
+          path.basename(file.originalname || 'Uploaded Video', ext),
+        status: 'QUEUED',
+        progress: 0,
+        metadata: {
+          tempVideoPath: file.path,
+          originalName: file.originalname,
+          description: body.description.trim(),
+          duration: body.duration || 0,
+          tags: parsedTags,
+          stage: 'QUEUED',
+        },
+      },
+    })
+
+    drainImportQueue().catch(() => {})
+    res.status(202).json({ job })
+  } catch (err) {
+    await fs.promises.unlink(file.path).catch(() => {})
+    throw err
+  }
 })

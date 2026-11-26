@@ -57,8 +57,8 @@ export const apiClient = {
     return data.workspaces
   },
 
-  async createWorkspace({ name, mode }) {
-    const { data } = await http.post('/workspaces', { name, mode })
+  async createWorkspace({ name, description = '', mode }) {
+    const { data } = await http.post('/workspaces', { name, description, mode })
     return data.workspace
   },
 
@@ -72,12 +72,54 @@ export const apiClient = {
     return data.workspace
   },
 
+  async deleteWorkspace(id) {
+    await http.delete(`/workspaces/${id}`)
+  },
+
   async addWorkspaceMember(workspaceId, { email, role }) {
     const { data } = await http.post(`/workspaces/${workspaceId}/members`, {
       email,
       role,
     })
     return data.member
+  },
+
+  async removeWorkspaceMember(workspaceId, memberId) {
+    await http.delete(`/workspaces/${workspaceId}/members/${memberId}`)
+  },
+
+  async createInvitation(workspaceId, { role, expiresInHours }) {
+    const { data } = await http.post(`/workspaces/${workspaceId}/invitations`, {
+      role,
+      expiresInHours,
+    })
+    return data
+  },
+
+  async listInvitations(workspaceId) {
+    const { data } = await http.get(`/workspaces/${workspaceId}/invitations`)
+    return data.invitations
+  },
+
+  async revokeInvitation(workspaceId, invitationId) {
+    await http.delete(`/workspaces/${workspaceId}/invitations/${invitationId}`)
+  },
+
+  async getInvitation(token) {
+    const { data } = await http.get(`/invitations/${encodeURIComponent(token)}`)
+    return data.invitation
+  },
+
+  async acceptInvitation(token) {
+    const { data } = await http.post(
+      `/invitations/${encodeURIComponent(token)}/accept`
+    )
+    return data
+  },
+
+  async joinWorkspaceByCode(code) {
+    const { data } = await http.post('/workspaces/join', { code })
+    return data
   },
 
   // Episodes & Audio
@@ -106,9 +148,10 @@ export const apiClient = {
     await http.delete(`/episodes/${id}`)
   },
 
-  getEpisodeAudioUrl(episodeId) {
+  getEpisodeAudioUrl(episodeId, explicitToken = null) {
     const base = `${API_BASE_URL}/episodes/${episodeId}/audio`
-    return authToken ? `${base}?token=${encodeURIComponent(authToken)}` : base
+    const t = explicitToken || authToken
+    return t ? `${base}?token=${encodeURIComponent(t)}` : base
   },
 
   // Annotations
@@ -166,9 +209,10 @@ export const apiClient = {
     return data.clip
   },
 
-  getClipAudioUrl(token) {
+  getClipAudioUrl(token, explicitToken = null) {
     const base = `${API_BASE_URL}/clips/${token}/audio`
-    return authToken ? `${base}?token=${encodeURIComponent(authToken)}` : base
+    const t = explicitToken || authToken
+    return t ? `${base}?token=${encodeURIComponent(t)}` : base
   },
 
   // Chapters
@@ -254,5 +298,45 @@ export const apiClient = {
   async retryImportJob(id) {
     const { data } = await http.post(`/imports/${id}/retry`)
     return data.job
+  },
+
+  async cancelImportJob(id) {
+    const { data } = await http.post(`/imports/${id}/cancel`)
+    return data.job
+  },
+
+  async uploadVideoImport({ workspaceId, file, title, description, tags, duration, onProgress }) {
+    const form = new FormData()
+    form.append('video', file)
+    form.append('workspaceId', workspaceId)
+    if (title) form.append('title', title)
+    if (description) form.append('description', description)
+    if (tags) form.append('tags', tags)
+    if (duration) form.append('duration', String(duration))
+
+    const { data } = await http.post('/imports/video', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (evt) => {
+        if (evt.total && onProgress) {
+          onProgress(Math.round((evt.loaded / evt.total) * 100))
+        }
+      },
+    })
+    return data
+  },
+
+  // Bookmarks
+  async listBookmarks(episodeId) {
+    const { data } = await http.get(`/episodes/${episodeId}/bookmarks`)
+    return data.bookmarks
+  },
+
+  async createBookmark(episodeId, payload) {
+    const { data } = await http.post(`/episodes/${episodeId}/bookmarks`, payload)
+    return data.bookmark
+  },
+
+  async deleteBookmark(bookmarkId) {
+    await http.delete(`/bookmarks/${bookmarkId}`)
   },
 }
